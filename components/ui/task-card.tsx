@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Edit2, X } from "lucide-react"
-import { Task } from "@/types"
+import { X, Flame, TrendingUp } from "lucide-react"
+import { Task, Priority } from "@/types"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import { EditTaskDialog } from "@/components/ui/edit-task-dialog"
 
 interface TaskCardProps {
   task: Task
@@ -16,11 +16,34 @@ interface TaskCardProps {
   onDelete: (id: string) => void
 }
 
+const getPriorityIcon = (priority: Priority) => {
+  switch (priority) {
+    case 'Critical':
+      return <Flame className="h-4 w-4 text-orange-500" />
+    case 'High':
+      return <TrendingUp className="h-4 w-4 text-red-500" />
+    default:
+      return null
+  }
+}
+
+const getPriorityColor = (priority: Priority) => {
+  switch (priority) {
+    case 'Critical':
+      return 'text-orange-600 bg-orange-50 dark:bg-orange-950 dark:text-orange-400'
+    case 'High':
+      return 'text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400'
+    case 'Medium':
+      return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400'
+    case 'Low':
+      return 'text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400'
+    default:
+      return 'text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-400'
+  }
+}
+
 export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [title, setTitle] = useState(task.title)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const {
     attributes,
@@ -37,29 +60,6 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     opacity: isDragging ? 0.5 : 1,
   }
 
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
-    }
-  }, [isEditing])
-
-  const handleSave = () => {
-    if (title.trim()) {
-      onUpdate(task.id, { title: title.trim() })
-      setIsEditing(false)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSave()
-    } else if (e.key === "Escape") {
-      setTitle(task.title)
-      setIsEditing(false)
-    }
-  }
-
   const handleDeleteClick = () => {
     setShowDeleteDialog(true)
   }
@@ -73,41 +73,25 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`mb-3 cursor-grab active:cursor-grabbing ${
+      className={`mb-3 cursor-grab active:cursor-grabbing relative ${
         isDragging ? "shadow-lg" : ""
       }`}
       {...attributes}
       {...listeners}
     >
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          {isEditing ? (
-            <Input
-              ref={inputRef}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleSave}
-              className="flex-1 text-sm"
-              placeholder="Task title..."
-            />
-          ) : (
-            <div
-              className="flex-1 text-sm font-medium cursor-text"
-              onDoubleClick={() => setIsEditing(true)}
-            >
-              {task.title}
-            </div>
-          )}
+      <CardContent className="p-3 pt-2">
+        {/* Title Section */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex-1 text-sm font-medium flex items-center gap-2">
+            {(task.priority === 'Critical' || task.priority === 'High') && (
+              <span className="flex-shrink-0">
+                {getPriorityIcon(task.priority)}
+              </span>
+            )}
+            <span>{task.title}</span>
+          </div>
           <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit2 className="h-3 w-3" />
-            </Button>
+            <EditTaskDialog task={task} onUpdate={onUpdate} />
             <Button
               variant="ghost"
               size="sm"
@@ -118,8 +102,51 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             </Button>
           </div>
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          {new Date(task.createdAt).toLocaleDateString()}
+
+        {/* Task Details */}
+        <div className="space-y-2">
+          {/* Priority Badge */}
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </span>
+            {task.storyPoints && (
+              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
+                {task.storyPoints} SP
+              </span>
+            )}
+          </div>
+
+          {/* Assignee */}
+          {task.assignee && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Assignee:</span> {task.assignee}
+            </div>
+          )}
+
+          {/* Tags */}
+          {task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {task.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Dates */}
+          <div className="text-xs text-muted-foreground pt-1 border-t space-y-1">
+            <div>Created: {new Date(task.createdAt).toLocaleDateString()}</div>
+            {task.completedAt && (
+              <div className="text-green-600 dark:text-green-400 font-medium">
+                Completed: {new Date(task.completedAt).toLocaleDateString()}
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
       <DeleteConfirmationDialog

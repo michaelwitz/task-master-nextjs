@@ -13,7 +13,7 @@ import {
 import { KanbanColumn } from "@/components/ui/kanban-column"
 import { NewTaskDialog } from "@/components/ui/new-task-dialog"
 import { TaskCard } from "@/components/ui/task-card"
-import { Task, TaskStatus } from "@/types"
+import { Task, TaskStatus, Priority } from "@/types"
 
 const COLUMNS: { id: TaskStatus; title: string }[] = [
   { id: "todo", title: "To Do" },
@@ -34,11 +34,21 @@ export function KanbanBoard() {
     })
   )
 
-  const createTask = (title: string) => {
+  const createTask = (taskData: {
+    title: string
+    storyPoints?: number
+    priority: Priority
+    assignee?: string
+    tags: string[]
+  }) => {
     const newTask: Task = {
       id: `task-${Date.now()}`,
-      title,
+      title: taskData.title,
       status: "todo",
+      storyPoints: taskData.storyPoints,
+      priority: taskData.priority,
+      assignee: taskData.assignee,
+      tags: taskData.tags,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -74,7 +84,24 @@ export function KanbanBoard() {
     const newStatus = over.id as TaskStatus
 
     if (COLUMNS.some((col) => col.id === newStatus)) {
-      updateTask(taskId, { status: newStatus })
+      const task = tasks.find(t => t.id === taskId)
+      if (task) {
+        const updates: Partial<Task> = { 
+          status: newStatus,
+          updatedAt: new Date()
+        }
+        
+        // Set completed date when moving to Done
+        if (newStatus === 'done' && task.status !== 'done') {
+          updates.completedAt = new Date()
+        }
+        // Remove completed date when moving out of Done
+        else if (newStatus !== 'done' && task.status === 'done') {
+          updates.completedAt = undefined
+        }
+        
+        updateTask(taskId, updates)
+      }
     }
   }
 
