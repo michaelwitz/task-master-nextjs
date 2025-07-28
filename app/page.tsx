@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,27 +8,98 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Plus, Users, Calendar } from "lucide-react"
+import { Plus, Users, Calendar, Edit } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useProjects } from "@/lib/hooks/useProjects"
+import { Project } from "@/types"
+import { UserSearch } from "@/components/ui/user-search"
+import { EditProjectDialog } from "@/components/ui/edit-project-dialog"
 
 export default function Home() {
   const [newProjectTitle, setNewProjectTitle] = useState("")
-  const [newProjectLeader, setNewProjectLeader] = useState("")
+  const [newProjectLeaderId, setNewProjectLeaderId] = useState("")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const router = useRouter()
-  const { projects, createProject } = useProjects()
 
-  const handleCreateProject = () => {
-    if (newProjectTitle.trim() && newProjectLeader.trim()) {
-      createProject(newProjectTitle, newProjectLeader)
-      setNewProjectTitle("")
-      setNewProjectLeader("")
-      setShowCreateDialog(false)
+  // Load projects on mount
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const response = await fetch('/api/projects')
+        if (response.ok) {
+          const data = await response.json()
+          setProjects(data)
+        }
+      } catch (error) {
+        console.error('Error loading projects:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [])
+
+  const handleCreateProject = async () => {
+    if (newProjectTitle.trim() && newProjectLeaderId) {
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: newProjectTitle,
+            leaderId: parseInt(newProjectLeaderId)
+          }),
+        })
+        
+        if (response.ok) {
+          const newProject = await response.json()
+          setProjects(prev => [...prev, newProject])
+          setNewProjectTitle("")
+          setNewProjectLeaderId("")
+          setShowCreateDialog(false)
+        } else {
+          const errorData = await response.json()
+          console.error('Error creating project:', errorData)
+        }
+      } catch (error) {
+        console.error('Error creating project:', error)
+      }
     }
   }
 
-  const selectProject = (projectId: string) => {
+  const handleUpdateProject = async (projectId: number, updates: { title: string; leaderId: number }) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      
+      if (response.ok) {
+        const updatedProject = await response.json()
+        setProjects(prev => prev.map(p => p.id === projectId ? updatedProject : p))
+        setShowEditDialog(false)
+        setEditingProject(null)
+      } else {
+        const errorData = await response.json()
+        console.error('Error updating project:', errorData)
+      }
+    } catch (error) {
+      console.error('Error updating project:', error)
+    }
+  }
+
+  const handleEditProject = (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click
+    setEditingProject(project)
+    setShowEditDialog(true)
+  }
+
+  const selectProject = (projectId: number) => {
     router.push(`/project/${projectId}`)
   }
 
@@ -42,7 +113,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Team Task Manager</h1>
+            <h1 className="text-4xl font-bold mb-4">Task Master</h1>
             <p className="text-muted-foreground text-lg">
               Manage your projects with Kanban boards
             </p>
@@ -85,16 +156,12 @@ export default function Home() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="project-leader">Project Leader *</Label>
-                    <Input
-                      id="project-leader"
-                      value={newProjectLeader}
-                      onChange={(e) => setNewProjectLeader(e.target.value)}
-                      placeholder="Enter project leader name..."
-                      required
-                    />
-                  </div>
+                  <UserSearch
+                    value={newProjectLeaderId}
+                    onValueChange={setNewProjectLeaderId}
+                    placeholder="Select project leader..."
+                    label="Project Leader *"
+                  />
                   <div className="flex justify-end gap-2">
                     <Button
                       type="button"
@@ -103,7 +170,10 @@ export default function Home() {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={!newProjectTitle.trim() || !newProjectLeader.trim()}>
+                    <Button 
+                      type="submit" 
+                      disabled={!newProjectTitle.trim() || !newProjectLeaderId}
+                    >
                       Create Project
                     </Button>
                   </div>
@@ -113,7 +183,11 @@ export default function Home() {
           </div>
 
           {/* Projects Grid */}
-          {projects.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <p>Loading projects...</p>
+            </div>
+          ) : projects.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-muted-foreground mb-4">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -130,7 +204,26 @@ export default function Home() {
                   onClick={() => selectProject(project.id)}
                 >
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{project.title}</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{project.title}</CardTitle>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={(e) => handleEditProject(project, e)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit project</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -148,6 +241,16 @@ export default function Home() {
                 </Card>
               ))}
             </div>
+          )}
+
+          {/* Edit Project Dialog */}
+          {editingProject && (
+            <EditProjectDialog
+              project={editingProject}
+              open={showEditDialog}
+              onOpenChange={setShowEditDialog}
+              onUpdate={handleUpdateProject}
+            />
           )}
         </div>
       </div>

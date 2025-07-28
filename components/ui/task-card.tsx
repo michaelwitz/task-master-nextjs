@@ -13,8 +13,8 @@ import { PRIORITY_COLORS } from "@/lib/utils/constants"
 
 interface TaskCardProps {
   task: Task
-  onUpdate: (id: string, updates: Partial<Task>) => void
-  onDelete: (id: string) => void
+  onUpdate: (id: string | number, updates: Partial<Task>) => void
+  onDelete: (id: string | number) => void
 }
 
 const getPriorityIcon = (priority: Priority) => {
@@ -30,6 +30,7 @@ const getPriorityIcon = (priority: Priority) => {
 
 export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const {
     attributes,
@@ -38,7 +39,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id })
+  } = useSortable({ id: task.id, disabled: isEditDialogOpen })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -59,9 +60,9 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`mb-3 cursor-grab active:cursor-grabbing relative ${
-        isDragging ? "shadow-lg" : ""
-      } ${task.isBlocked ? "ring-2 ring-yellow-400" : ""}`}
+                    className={`mb-3 cursor-grab active:cursor-grabbing relative ${
+                isDragging ? "shadow-lg" : ""
+              } ${task.isBlocked ? "ring-2 ring-yellow-400" : ""}`}
       {...attributes}
       {...listeners}
     >
@@ -79,7 +80,11 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             <span>{task.title}</span>
           </div>
           <div className="flex gap-1">
-            <EditTaskDialog task={task} onUpdate={onUpdate} />
+            <EditTaskDialog 
+              task={task} 
+              onUpdate={onUpdate} 
+              onOpenChange={setIsEditDialogOpen}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -93,22 +98,22 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
         {/* Task Details */}
         <div className="space-y-2">
-          {/* Priority Badge */}
-          <div className="flex items-center gap-2">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${PRIORITY_COLORS[task.priority]}`}>
-              {task.priority}
-            </span>
-            {task.storyPoints !== undefined && task.storyPoints !== null && (
-              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
-                {task.storyPoints} SP
-              </span>
-            )}
-            {task.isBlocked && (
-              <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full font-medium">
-                BLOCKED
-              </span>
-            )}
-          </div>
+                            {/* Priority Badge */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${PRIORITY_COLORS[task.priority]}`}>
+                      {task.priority}
+                    </span>
+                    {task.storyPoints !== undefined && task.storyPoints !== null && (
+                      <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
+                        {task.storyPoints} SP
+                      </span>
+                    )}
+                    {task.isBlocked && (
+                      <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full font-medium">
+                        BLOCKED
+                      </span>
+                    )}
+                  </div>
 
           {/* Assignee */}
           {task.assignee && (
@@ -117,15 +122,15 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             </div>
           )}
 
-          {/* Blocked Reason */}
-          {task.isBlocked && task.blockedReason && (
-            <div className="text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 p-2 rounded">
-              <span className="font-medium">Blocked:</span> {task.blockedReason}
-            </div>
-          )}
+                            {/* Blocked Reason */}
+                  {task.isBlocked && task.blockedReason && (
+                    <div className="text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 p-2 rounded">
+                      <span className="font-medium">Blocked:</span> {task.blockedReason}
+                    </div>
+                  )}
 
           {/* Tags */}
-          {task.tags.length > 0 && (
+          {task.tags && task.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {task.tags.map((tag, index) => (
                 <span

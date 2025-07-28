@@ -1,27 +1,40 @@
 export type TaskStatus = 'todo' | 'in-progress' | 'in-review' | 'done'
 export type Priority = 'Low' | 'Medium' | 'High' | 'Critical'
 
+export interface User {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export interface Project {
-  id: string
+  id: number
   title: string
-  leader: string
+  leaderId: number
+  leader?: string // For display purposes
   createdAt: Date
   updatedAt: Date
 }
 
 export interface Task {
-  id: string
+  id: number
+  projectId: number
   title: string
   status: TaskStatus
   storyPoints?: number
   priority: Priority
-  assignee?: string
+  assigneeId?: number
+  assignee?: string // For display purposes
   tags: string[]
+  description?: string // Markdown content for detailed task instructions
   isBlocked?: boolean
   blockedReason?: string
+  completedAt?: Date
   createdAt: Date
   updatedAt: Date
-  completedAt?: Date
 }
 
 export interface Column {

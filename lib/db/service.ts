@@ -1,0 +1,357 @@
+import { db } from './index'
+import { USERS, TAGS, PROJECTS, TASKS, TASK_TAGS } from './schema'
+import { eq, and, ilike, desc, asc, or, sql } from 'drizzle-orm'
+import type { Task, Priority } from '@/types'
+import { mapDbToJs, mapJsToDb, mapDbArrayToJs } from '@/lib/utils/property-mapper'
+
+export class DatabaseService {
+  // User methods
+  async getUsers() {
+    const users = await db.select().from(USERS).orderBy(asc(USERS.first_name), asc(USERS.last_name))
+    return mapDbArrayToJs(users)
+  }
+
+  async searchUsers(query: string) {
+    const searchTerm = `%${query.toLowerCase()}%`
+    const users = await db
+      .select({
+        id: USERS.id,
+        first_name: USERS.first_name,
+        last_name: USERS.last_name,
+        email: USERS.email,
+        full_name: sql<string>`${USERS.first_name} || ' ' || ${USERS.last_name}`,
+      })
+      .from(USERS)
+      .where(
+        or(
+          ilike(USERS.first_name, searchTerm),
+          ilike(USERS.last_name, searchTerm),
+          ilike(USERS.email, searchTerm),
+          ilike(sql<string>`${USERS.first_name} || ' ' || ${USERS.last_name}`, searchTerm)
+        )
+      )
+      .orderBy(asc(USERS.first_name), asc(USERS.last_name))
+      .limit(10)
+    
+    return mapDbArrayToJs(users)
+  }
+
+  async createUser(firstName: string, lastName: string, email: string) {
+    const [user] = await db
+      .insert(USERS)
+      .values({
+        first_name: firstName,
+        last_name: lastName,
+        email: email.toLowerCase(),
+      })
+      .returning()
+    return mapDbToJs(user)
+  }
+
+  // Tag methods
+  async getTags() {
+    const tags = await db.select().from(TAGS).orderBy(asc(TAGS.tag))
+    return mapDbArrayToJs(tags)
+  }
+
+  async searchTags(query: string) {
+    const searchTerm = `%${query.toLowerCase()}%`
+    const tags = await db
+      .select()
+      .from(TAGS)
+      .where(ilike(TAGS.tag, searchTerm))
+      .orderBy(asc(TAGS.tag))
+      .limit(10)
+    
+    return mapDbArrayToJs(tags)
+  }
+
+  async createTag(tag: string) {
+    const [newTag] = await db
+      .insert(TAGS)
+      .values({ tag: tag.toLowerCase() })
+      .returning()
+    return mapDbToJs(newTag)
+  }
+
+  // Project methods
+  async getProjects() {
+    const projects = await db
+      .select({
+        id: PROJECTS.id,
+        title: PROJECTS.title,
+        leader_id: PROJECTS.leader_id,
+        created_at: PROJECTS.created_at,
+        updated_at: PROJECTS.updated_at,
+        leader: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(PROJECTS)
+      .leftJoin(USERS, eq(PROJECTS.leader_id, USERS.id))
+      .orderBy(desc(PROJECTS.created_at))
+
+    return projects.map(project => {
+      const mappedProject = mapDbToJs(project)
+      return {
+        ...mappedProject,
+        leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+      }
+    })
+  }
+
+  async createProject(title: string, leaderId: number) {
+    const [project] = await db
+      .insert(PROJECTS)
+      .values({
+        title: title.trim(),
+        leader_id: leaderId,
+      })
+      .returning()
+    return mapDbToJs(project)
+  }
+
+  async getProject(id: number) {
+    const [project] = await db.select().from(PROJECTS).where(eq(PROJECTS.id, id))
+    return project ? mapDbToJs(project) : null
+  }
+
+  async updateProject(id: number, updates: { title?: string; leaderId?: number }) {
+    // Convert camelCase updates to snake_case for database
+    const dbUpdates = mapJsToDb(updates)
+    
+    const [project] = await db
+      .update(PROJECTS)
+      .set({
+        ...dbUpdates,
+        updated_at: new Date(),
+      })
+      .where(eq(PROJECTS.id, id))
+      .returning()
+    return mapDbToJs(project)
+  }
+
+  async deleteProject(id: number) {
+    await db.delete(PROJECTS).where(eq(PROJECTS.id, id))
+  }
+
+  // Task methods
+  async getTasks(projectId: number) {
+    const tasks = await db
+      .select({
+        id: TASKS.id,
+        project_id: TASKS.project_id,
+        title: TASKS.title,
+        status: TASKS.status,
+        story_points: TASKS.story_points,
+        priority: TASKS.priority,
+        assignee_id: TASKS.assignee_id,
+        description: TASKS.description,
+        is_blocked: TASKS.is_blocked,
+        blocked_reason: TASKS.blocked_reason,
+        completed_at: TASKS.completed_at,
+        created_at: TASKS.created_at,
+        updated_at: TASKS.updated_at,
+        assignee: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(TASKS)
+      .leftJoin(USERS, eq(TASKS.assignee_id, USERS.id))
+      .where(eq(TASKS.project_id, projectId))
+      .orderBy(asc(TASKS.created_at))
+
+    // Get tags for each task
+    const tasksWithTags = await Promise.all(
+      tasks.map(async (task) => {
+        const taskTags = await db
+          .select({ tag: TAGS.tag })
+          .from(TASK_TAGS)
+          .innerJoin(TAGS, eq(TASK_TAGS.tag, TAGS.tag))
+          .where(eq(TASK_TAGS.task_id, task.id))
+
+        const mappedTask = mapDbToJs(task)
+        return {
+          ...mappedTask,
+          tags: taskTags.map(tt => tt.tag),
+          assignee: task.assignee ? `${task.assignee.first_name} ${task.assignee.last_name}` : undefined,
+        }
+      })
+    )
+
+    return tasksWithTags
+  }
+
+  async createTask(projectId: number, taskData: {
+    title: string
+    storyPoints?: number
+    priority: Priority
+    assigneeId?: number
+    tags: string[]
+    description?: string
+    isBlocked?: boolean
+    blockedReason?: string
+  }) {
+    // Create the task
+    const [task] = await db
+      .insert(TASKS)
+      .values({
+        project_id: projectId,
+        title: taskData.title,
+        story_points: taskData.storyPoints,
+        priority: taskData.priority,
+        assignee_id: taskData.assigneeId,
+        description: taskData.description,
+        is_blocked: taskData.isBlocked || false,
+        blocked_reason: taskData.blockedReason,
+      })
+      .returning()
+
+    // Create tags if they don't exist and link them to the task
+    if (taskData.tags.length > 0) {
+      await Promise.all(
+        taskData.tags.map(async (tag) => {
+          // Try to create the tag (will fail silently if it exists)
+          try {
+            await db.insert(TAGS).values({ tag: tag.toLowerCase() })
+          } catch (error) {
+            // Tag already exists, continue
+          }
+
+          // Link tag to task
+          await db.insert(TASK_TAGS).values({
+            task_id: task.id,
+            tag: tag.toLowerCase(),
+          })
+        })
+      )
+    }
+
+    return mapDbToJs(task)
+  }
+
+  async updateTask(projectId: number, taskId: number, updates: Partial<Task>) {
+    // Convert camelCase updates to snake_case for database
+    const dbUpdates = mapJsToDb(updates)
+    
+    // Update the task
+    const [task] = await db
+      .update(TASKS)
+      .set({
+        title: dbUpdates.title,
+        status: dbUpdates.status,
+        story_points: dbUpdates.story_points,
+        priority: dbUpdates.priority,
+        assignee_id: updates.assignee ? 
+          (await this.getUserIdByName(updates.assignee))?.id : undefined,
+        description: dbUpdates.description,
+        is_blocked: dbUpdates.is_blocked,
+        blocked_reason: dbUpdates.blocked_reason,
+        completed_at: dbUpdates.completed_at,
+        updated_at: new Date(),
+      })
+      .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+      .returning()
+
+    // Update tags if provided
+    if (updates.tags) {
+      // Remove existing tags
+      await db.delete(TASK_TAGS).where(eq(TASK_TAGS.task_id, taskId))
+
+      // Add new tags
+      if (updates.tags.length > 0) {
+        await Promise.all(
+          updates.tags.map(async (tag) => {
+            // Try to create the tag (will fail silently if it exists)
+            try {
+              await db.insert(TAGS).values({ tag: tag.toLowerCase() })
+            } catch (error) {
+              // Tag already exists, continue
+            }
+
+            // Link tag to task
+            await db.insert(TASK_TAGS).values({
+              task_id: taskId,
+              tag: tag.toLowerCase(),
+            })
+          })
+        )
+      }
+    }
+
+    return mapDbToJs(task)
+  }
+
+  async deleteTask(projectId: number, taskId: number) {
+    await db
+      .delete(TASKS)
+      .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+  }
+
+  async getTasksByStatus(projectId: number, status: string) {
+    const tasks = await db
+      .select({
+        id: TASKS.id,
+        project_id: TASKS.project_id,
+        title: TASKS.title,
+        status: TASKS.status,
+        story_points: TASKS.story_points,
+        priority: TASKS.priority,
+        assignee_id: TASKS.assignee_id,
+        description: TASKS.description,
+        is_blocked: TASKS.is_blocked,
+        blocked_reason: TASKS.blocked_reason,
+        completed_at: TASKS.completed_at,
+        created_at: TASKS.created_at,
+        updated_at: TASKS.updated_at,
+        assignee: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(TASKS)
+      .leftJoin(USERS, eq(TASKS.assignee_id, USERS.id))
+      .where(and(eq(TASKS.project_id, projectId), eq(TASKS.status, status)))
+      .orderBy(asc(TASKS.created_at))
+
+    // Get tags for each task
+    const tasksWithTags = await Promise.all(
+      tasks.map(async (task) => {
+        const taskTags = await db
+          .select({ tag: TAGS.tag })
+          .from(TASK_TAGS)
+          .innerJoin(TAGS, eq(TASK_TAGS.tag, TAGS.tag))
+          .where(eq(TASK_TAGS.task_id, task.id))
+
+        const mappedTask = mapDbToJs(task)
+        return {
+          ...mappedTask,
+          tags: taskTags.map(tt => tt.tag),
+          assignee: task.assignee ? `${task.assignee.first_name} ${task.assignee.last_name}` : undefined,
+        }
+      })
+    )
+
+    return tasksWithTags
+  }
+
+  private async getUserIdByName(fullName: string) {
+    const [firstName, lastName] = fullName.split(' ')
+    const [user] = await db
+      .select()
+      .from(USERS)
+      .where(and(eq(USERS.first_name, firstName), eq(USERS.last_name, lastName)))
+    return user || null
+  }
+}
+
+// Create singleton instance
+export const dbService = new DatabaseService() 

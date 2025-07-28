@@ -10,8 +10,8 @@ interface KanbanColumnProps {
   id: TaskStatus
   title: string
   tasks: Task[]
-  onUpdateTask: (id: string, updates: Partial<Task>) => void
-  onDeleteTask: (id: string) => void
+  onUpdateTask: (id: string | number, updates: Partial<Task>) => void
+  onDeleteTask: (id: string | number) => void
 }
 
 export function KanbanColumn({
@@ -27,8 +27,7 @@ export function KanbanColumn({
 
   return (
     <Card
-      ref={setNodeRef}
-      className={`h-fit min-h-[500px] w-80 ${
+      className={`h-screen w-80 flex flex-col ${
         isOver ? "ring-2 ring-primary/50" : ""
       }`}
     >
@@ -40,7 +39,7 @@ export function KanbanColumn({
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 flex-1 overflow-y-auto" ref={setNodeRef}>
         <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <TaskCard

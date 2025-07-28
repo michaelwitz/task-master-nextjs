@@ -120,3 +120,63 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown Editor Styles */
+.w-md-editor {
+  @apply border-border bg-background text-foreground;
+  height: auto !important;
+}
+
+.w-md-editor-content {
+  height: auto !important;
+  min-height: 400px !important;
+}
+
+.w-md-editor-toolbar {
+  @apply border-border bg-muted;
+}
+
+.w-md-editor-toolbar-divider {
+  @apply bg-border;
+}
+
+.w-md-editor-toolbar ul {
+  @apply bg-popover border-border;
+}
+
+.w-md-editor-toolbar li {
+  @apply text-foreground hover:bg-accent;
+}
+
+.w-md-editor-toolbar li.active {
+  @apply bg-accent text-accent-foreground;
+}
+
+.w-md-editor-input {
+  @apply bg-background text-foreground;
+}
+
+.w-md-editor-preview {
+  @apply bg-background text-foreground;
+}
+
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3,
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6 {
+  @apply text-foreground;
+}
+
+.w-md-editor-preview code {
+  @apply bg-muted text-foreground;
+}
+
+.w-md-editor-preview pre {
+  @apply bg-muted border-border;
+}
+
+.w-md-editor-preview blockquote {
+  @apply border-l-4 border-border bg-muted/50;
+}

@@ -1,33 +1,106 @@
 "use client"
 
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
+import { useState, useEffect } from "react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { KanbanBoard } from "@/components/kanban-board"
-import { NewTaskDialog } from "@/components/ui/new-task-dialog"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ArrowLeft } from "lucide-react"
-import { useProjects } from "@/lib/hooks/useProjects"
-import { useTasks } from "@/lib/hooks/useTasks"
+import { Project, Task } from "@/types"
 
 export default function ProjectPage() {
   const params = useParams()
-  const router = useRouter()
   const projectId = params.id as string
   
-  const { getProject } = useProjects()
-  const { tasks, createTask, updateTask, deleteTask } = useTasks(projectId)
-  
-  const project = getProject(projectId)
+  const [project, setProject] = useState<Project | null>(null)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Simple data loading - only run once on mount
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Load project
+        const projectRes = await fetch(`/api/projects/${projectId}`)
+        if (projectRes.ok) {
+          const projectData = await projectRes.json()
+          setProject(projectData)
+        }
+
+        // Load tasks
+        const tasksRes = await fetch(`/api/projects/${projectId}/tasks`)
+        if (tasksRes.ok) {
+          const tasksData = await tasksRes.json()
+          setTasks(tasksData)
+        }
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, []) // Empty dependency array - only run once
+
+  async function handleUpdateTask(id: string | number, updates: Partial<Task>) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      if (response.ok) {
+        const updatedTask = await response.json()
+        setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task))
+      }
+    } catch (error) {
+      console.error('Error updating task:', error)
+    }
+  }
+
+  async function handleDeleteTask(id: string | number) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks/${id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setTasks(prev => prev.filter(task => task.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error)
+    }
+  }
+
+  async function handleCreateTask(taskData: Partial<Task>) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      })
+      if (response.ok) {
+        const newTask = await response.json()
+        setTasks(prev => [...prev, newTask])
+      }
+    } catch (error) {
+      console.error('Error creating task:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
+        </div>
+      </div>
+    )
+  }
 
   if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Project not found</h2>
-          <Button onClick={() => router.push('/')}>
-            Back to Projects
-          </Button>
         </div>
       </div>
     )
@@ -42,31 +115,6 @@ export default function ProjectPage() {
       {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="relative py-4">
-          <div className="flex items-center justify-between px-4">
-            <div className="flex items-center gap-6">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => router.push('/')}
-                      className="h-9 w-9 p-0"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Back to project manager</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <div className="w-px h-6 bg-border"></div>
-              <div className="-ml-8">
-                <NewTaskDialog onCreateTask={createTask} />
-              </div>
-            </div>
-          </div>
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-lg font-medium text-blue-600 dark:text-blue-400">
               {project.title}
@@ -77,10 +125,10 @@ export default function ProjectPage() {
 
       {/* Kanban Board */}
       <KanbanBoard 
-        onCreateTask={createTask}
         tasks={tasks}
-        onUpdateTask={updateTask}
-        onDeleteTask={deleteTask}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
+        onCreateTask={handleCreateTask}
       />
     </div>
   )

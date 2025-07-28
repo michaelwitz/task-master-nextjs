@@ -1,51 +1,47 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { MarkdownEditor } from "@/components/ui/markdown-editor"
 import { Edit2 } from "lucide-react"
 import { Task, Priority } from "@/types"
 import { STORY_POINTS, PRIORITIES } from "@/lib/utils/constants"
+import { UserSearch } from "@/components/ui/user-search"
 
 interface EditTaskDialogProps {
   task: Task
   onUpdate: (id: string, updates: Partial<Task>) => void
+  onOpenChange?: (open: boolean) => void
 }
 
-export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
+export function EditTaskDialog({ task, onUpdate, onOpenChange }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState(task.title)
-  const [storyPoints, setStoryPoints] = useState<string>(task.storyPoints?.toString() || "-")
-  const [priority, setPriority] = useState<Priority>(task.priority)
-  const [assignee, setAssignee] = useState(task.assignee || "")
-  const [tags, setTags] = useState(task.tags.join(", "))
+  const [description, setDescription] = useState(task.description || "")
   const [isBlocked, setIsBlocked] = useState(task.isBlocked || false)
   const [blockedReason, setBlockedReason] = useState(task.blockedReason || "")
-
-  // Reset form when task changes
-  useEffect(() => {
-    setTitle(task.title)
-    setStoryPoints(task.storyPoints?.toString() || "-")
-    setPriority(task.priority)
-    setAssignee(task.assignee || "")
-    setTags(task.tags.join(", "))
-    setIsBlocked(task.isBlocked || false)
-    setBlockedReason(task.blockedReason || "")
-  }, [task])
+  const [assigneeId, setAssigneeId] = useState(task.assigneeId?.toString() || "")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const title = formData.get('title') as string
+    const storyPoints = formData.get('storyPoints') as string
+    const priority = formData.get('priority') as Priority
+    const tags = formData.get('tags') as string
+
     if (title.trim()) {
-      onUpdate(task.id, {
+      onUpdate(task.id.toString(), {
         title: title.trim(),
         storyPoints: storyPoints && storyPoints !== '-' ? parseInt(storyPoints) : undefined,
         priority,
-        assignee: assignee.trim() || undefined,
+        assigneeId: assigneeId ? parseInt(assigneeId) : undefined,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-        isBlocked,
+        description: description.trim() || undefined,
+        isBlocked: isBlocked,
         blockedReason: blockedReason.trim() || undefined,
         updatedAt: new Date(),
       })
@@ -53,24 +49,29 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    onOpenChange?.(newOpen)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
           <Edit2 className="h-3 w-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[33vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
             <Label htmlFor="edit-title">Task Title *</Label>
             <Input
               id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              name="title"
+              defaultValue={task.title}
               placeholder="Enter task title..."
               autoFocus
               required
@@ -80,7 +81,7 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-storyPoints">Story Points</Label>
-              <Select value={storyPoints} onValueChange={setStoryPoints}>
+              <Select name="storyPoints" defaultValue={task.storyPoints?.toString() || "-"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select points" />
                 </SelectTrigger>
@@ -97,7 +98,7 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor="edit-priority">Priority</Label>
-              <Select value={priority} onValueChange={(value) => setPriority(value as Priority)}>
+              <Select name="priority" defaultValue={task.priority}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -112,23 +113,29 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-assignee">Assignee</Label>
-            <Input
-              id="edit-assignee"
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-              placeholder="Developer name..."
-            />
-          </div>
+          <UserSearch
+            value={assigneeId}
+            onValueChange={setAssigneeId}
+            placeholder="Select assignee..."
+            label="Assignee"
+          />
 
           <div className="space-y-2">
             <Label htmlFor="edit-tags">Tags</Label>
             <Input
               id="edit-tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              name="tags"
+              defaultValue={task.tags && task.tags.length > 0 ? task.tags.join(", ") : ""}
               placeholder="bug, frontend, urgent (comma separated)"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <MarkdownEditor
+              value={description}
+              onChange={setDescription}
+              label="Description"
+              placeholder="Enter detailed task description with markdown formatting..."
             />
           </div>
 
@@ -139,7 +146,14 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
                 id="edit-isBlocked"
                 checked={isBlocked}
                 onChange={(e) => setIsBlocked(e.target.checked)}
-                className="rounded border-gray-300"
+                onKeyDown={(e) => {
+                  if (e.key === ' ') {
+                    e.preventDefault()
+                    setIsBlocked(!isBlocked)
+                  }
+                }}
+                className="rounded border-gray-300 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                tabIndex={0}
               />
               <Label htmlFor="edit-isBlocked">Task is blocked</Label>
             </div>
@@ -164,7 +178,7 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!title.trim()}>
+            <Button type="submit">
               Save Changes
             </Button>
           </div>
