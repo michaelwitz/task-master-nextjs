@@ -15,6 +15,13 @@
       "when": 1753716539882,
       "tag": "0001_overconfident_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1753732809519,
+      "tag": "0002_illegal_nebula",
+      "breakpoints": true
     }
   ]
 }

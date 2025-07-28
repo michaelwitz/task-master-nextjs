@@ -32,6 +32,7 @@ export const TASKS = pgTable('TASKS', {
   project_id: integer('project_id').notNull().references(() => PROJECTS.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   status: varchar('status', { length: 20 }).notNull().default('todo'), // 'todo', 'in-progress', 'in-review', 'done'
+  position: integer('position').notNull().default(0), // Position within the column for ordering
   story_points: integer('story_points'),
   priority: varchar('priority', { length: 20 }).notNull().default('Medium'), // 'Low', 'Medium', 'High', 'Critical'
   assignee_id: integer('assignee_id').references(() => USERS.id, { onDelete: 'set null' }),

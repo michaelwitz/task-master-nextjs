@@ -39,22 +39,26 @@ export function KanbanColumn({
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 flex-1 overflow-y-auto" ref={setNodeRef}>
-        <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onUpdate={onUpdateTask}
-              onDelete={onDeleteTask}
-            />
-          ))}
-        </SortableContext>
-        {tasks.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-8">
-            No tasks
-          </div>
-        )}
+      <CardContent className="pt-0 flex-1 overflow-y-auto">
+        <div ref={setNodeRef} className="h-full">
+          <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onUpdate={onUpdateTask}
+                  onDelete={onDeleteTask}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          {tasks.length === 0 && (
+            <div className="text-center text-sm text-muted-foreground py-8">
+              No tasks
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

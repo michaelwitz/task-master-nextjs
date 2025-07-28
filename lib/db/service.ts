@@ -146,6 +146,7 @@ export class DatabaseService {
         project_id: TASKS.project_id,
         title: TASKS.title,
         status: TASKS.status,
+        position: TASKS.position,
         story_points: TASKS.story_points,
         priority: TASKS.priority,
         assignee_id: TASKS.assignee_id,
@@ -165,7 +166,7 @@ export class DatabaseService {
       .from(TASKS)
       .leftJoin(USERS, eq(TASKS.assignee_id, USERS.id))
       .where(eq(TASKS.project_id, projectId))
-      .orderBy(asc(TASKS.created_at))
+      .orderBy(asc(TASKS.status), asc(TASKS.position))
 
     // Get tags for each task
     const tasksWithTags = await Promise.all(
@@ -197,13 +198,27 @@ export class DatabaseService {
     description?: string
     isBlocked?: boolean
     blockedReason?: string
+    status?: string
   }) {
+    // Get the next position for this status using increments of 10
+    const maxPositionResult = await db
+      .select({ maxPosition: sql<number>`COALESCE(MAX(position), 0)` })
+      .from(TASKS)
+      .where(and(
+        eq(TASKS.project_id, projectId),
+        eq(TASKS.status, taskData.status || 'todo')
+      ))
+    
+    const nextPosition = maxPositionResult[0]?.maxPosition + 10
+
     // Create the task
     const [task] = await db
       .insert(TASKS)
       .values({
         project_id: projectId,
         title: taskData.title,
+        status: taskData.status || 'todo',
+        position: nextPosition,
         story_points: taskData.storyPoints,
         priority: taskData.priority,
         assignee_id: taskData.assigneeId,
@@ -350,6 +365,131 @@ export class DatabaseService {
       .from(USERS)
       .where(and(eq(USERS.first_name, firstName), eq(USERS.last_name, lastName)))
     return user || null
+  }
+
+  async reorderTasks(projectId: number, taskId: number, newStatus: string, targetPosition: number) {
+    // Get the current task
+    const [currentTask] = await db
+      .select()
+      .from(TASKS)
+      .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+
+    if (!currentTask) {
+      throw new Error('Task not found')
+    }
+
+    const oldStatus = currentTask.status
+    const oldPosition = currentTask.position
+
+    // If moving to a different status, we need to calculate the new position
+    if (oldStatus !== newStatus) {
+      // Get all tasks in the target status, ordered by position
+      const targetTasks = await db
+        .select()
+        .from(TASKS)
+        .where(and(eq(TASKS.project_id, projectId), eq(TASKS.status, newStatus)))
+        .orderBy(asc(TASKS.position))
+
+      let newPosition: number
+
+      if (targetTasks.length === 0) {
+        // Empty column, start at position 10
+        newPosition = 10
+      } else if (targetPosition === 0) {
+        // Dropping at the beginning
+        newPosition = Math.floor(targetTasks[0].position / 2)
+      } else if (targetPosition >= targetTasks.length || targetPosition === 999) {
+        // Dropping at the end
+        newPosition = targetTasks[targetTasks.length - 1].position + 10
+      } else {
+        // Dropping between two tasks
+        const prevTask = targetTasks[targetPosition - 1]
+        const nextTask = targetTasks[targetPosition]
+        newPosition = Math.floor((prevTask.position + nextTask.position) / 2)
+        
+        // If positions are too close, we need to reorder
+        if (newPosition === prevTask.position || newPosition === nextTask.position) {
+          // Reorder the entire column with increments of 10
+          for (let i = 0; i < targetTasks.length; i++) {
+            await db
+              .update(TASKS)
+              .set({ position: (i + 1) * 10 })
+              .where(eq(TASKS.id, targetTasks[i].id))
+          }
+          newPosition = (targetPosition + 1) * 10
+        }
+      }
+
+      // Update the moved task
+      await db
+        .update(TASKS)
+        .set({ 
+          status: newStatus, 
+          position: newPosition,
+          updated_at: new Date()
+        })
+        .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+
+      // Reorder the old status column if it's different
+      if (oldStatus !== newStatus) {
+        const oldTasks = await db
+          .select()
+          .from(TASKS)
+          .where(and(eq(TASKS.project_id, projectId), eq(TASKS.status, oldStatus)))
+          .orderBy(asc(TASKS.position))
+
+        for (let i = 0; i < oldTasks.length; i++) {
+          await db
+            .update(TASKS)
+            .set({ position: (i + 1) * 10 })
+            .where(eq(TASKS.id, oldTasks[i].id))
+        }
+      }
+    } else {
+      // Same status, reordering within the column
+      const columnTasks = await db
+        .select()
+        .from(TASKS)
+        .where(and(eq(TASKS.project_id, projectId), eq(TASKS.status, oldStatus)))
+        .orderBy(asc(TASKS.position))
+
+      let newPosition: number
+
+      if (targetPosition === 0) {
+        // Moving to the beginning
+        newPosition = Math.floor(columnTasks[0].position / 2)
+      } else if (targetPosition >= columnTasks.length || targetPosition === 999) {
+        // Moving to the end
+        newPosition = columnTasks[columnTasks.length - 1].position + 10
+      } else {
+        // Moving between two tasks
+        const prevTask = columnTasks[targetPosition - 1]
+        const nextTask = columnTasks[targetPosition]
+        newPosition = Math.floor((prevTask.position + nextTask.position) / 2)
+        
+        // If positions are too close, reorder the entire column
+        if (newPosition === prevTask.position || newPosition === nextTask.position) {
+          for (let i = 0; i < columnTasks.length; i++) {
+            await db
+              .update(TASKS)
+              .set({ position: (i + 1) * 10 })
+              .where(eq(TASKS.id, columnTasks[i].id))
+          }
+          newPosition = (targetPosition + 1) * 10
+        }
+      }
+
+      // Update the moved task
+      await db
+        .update(TASKS)
+        .set({ 
+          position: newPosition,
+          updated_at: new Date()
+        })
+        .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+    }
+
+    return this.getTasks(projectId)
   }
 }
 

@@ -24,6 +24,7 @@ export interface Task {
   projectId: number
   title: string
   status: TaskStatus
+  position: number // Position within the column for ordering
   storyPoints?: number
   priority: Priority
   assigneeId?: number

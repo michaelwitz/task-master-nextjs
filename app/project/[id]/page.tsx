@@ -86,6 +86,23 @@ export default function ProjectPage() {
     }
   }
 
+  async function handleReorderTasks(taskId: number, newStatus: string, newPosition: number) {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newStatus, newPosition }),
+      })
+      if (response.ok) {
+        const updatedTasks = await response.json()
+        setTasks(updatedTasks)
+      }
+    } catch (error) {
+      console.error('Error reordering tasks:', error)
+      throw error // Re-throw so the KanbanBoard can handle it
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -129,6 +146,7 @@ export default function ProjectPage() {
         onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}
         onCreateTask={handleCreateTask}
+        onReorderTasks={handleReorderTasks}
       />
     </div>
   )
