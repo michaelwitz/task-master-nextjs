@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Plus } from "lucide-react"
 import { Priority } from "@/types"
+import { STORY_POINTS, PRIORITIES } from "@/lib/utils/constants"
 
 interface NewTaskDialogProps {
   onCreateTask: (taskData: {
@@ -17,11 +18,10 @@ interface NewTaskDialogProps {
     priority: Priority
     assignee?: string
     tags: string[]
+    isBlocked?: boolean
+    blockedReason?: string
   }) => void
 }
-
-const STORY_POINTS = [0, 1, 2, 3, 5, 8, 13, 21]
-const PRIORITIES: Priority[] = ['Low', 'Medium', 'High', 'Critical']
 
 export function NewTaskDialog({ onCreateTask }: NewTaskDialogProps) {
   const [open, setOpen] = useState(false)
@@ -30,22 +30,28 @@ export function NewTaskDialog({ onCreateTask }: NewTaskDialogProps) {
   const [priority, setPriority] = useState<Priority>("Medium")
   const [assignee, setAssignee] = useState("")
   const [tags, setTags] = useState("")
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockedReason, setBlockedReason] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (title.trim()) {
-              onCreateTask({
-          title: title.trim(),
-          storyPoints: storyPoints && storyPoints !== '-' ? parseInt(storyPoints) : undefined,
-          priority,
-          assignee: assignee.trim() || undefined,
-          tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-        })
+      onCreateTask({
+        title: title.trim(),
+        storyPoints: storyPoints && storyPoints !== '-' ? parseInt(storyPoints) : undefined,
+        priority,
+        assignee: assignee.trim() || undefined,
+        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+        isBlocked,
+        blockedReason: blockedReason.trim() || undefined,
+      })
       setTitle("")
-              setStoryPoints("-")
+      setStoryPoints("-")
       setPriority("Medium")
       setAssignee("")
       setTags("")
+      setIsBlocked(false)
+      setBlockedReason("")
       setOpen(false)
     }
   }
@@ -139,6 +145,30 @@ export function NewTaskDialog({ onCreateTask }: NewTaskDialogProps) {
               onChange={(e) => setTags(e.target.value)}
               placeholder="bug, frontend, urgent (comma separated)"
             />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isBlocked"
+                checked={isBlocked}
+                onChange={(e) => setIsBlocked(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="isBlocked">Task is blocked</Label>
+            </div>
+            {isBlocked && (
+              <div className="space-y-2">
+                <Label htmlFor="blockedReason">Blocked Reason</Label>
+                <Input
+                  id="blockedReason"
+                  value={blockedReason}
+                  onChange={(e) => setBlockedReason(e.target.value)}
+                  placeholder="Why is this task blocked?"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">

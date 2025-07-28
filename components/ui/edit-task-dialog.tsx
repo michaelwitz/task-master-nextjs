@@ -8,14 +8,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit2 } from "lucide-react"
 import { Task, Priority } from "@/types"
+import { STORY_POINTS, PRIORITIES } from "@/lib/utils/constants"
 
 interface EditTaskDialogProps {
   task: Task
   onUpdate: (id: string, updates: Partial<Task>) => void
 }
-
-const STORY_POINTS = [0, 1, 2, 3, 5, 8, 13, 21]
-const PRIORITIES: Priority[] = ['Low', 'Medium', 'High', 'Critical']
 
 export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
@@ -24,6 +22,8 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
   const [priority, setPriority] = useState<Priority>(task.priority)
   const [assignee, setAssignee] = useState(task.assignee || "")
   const [tags, setTags] = useState(task.tags.join(", "))
+  const [isBlocked, setIsBlocked] = useState(task.isBlocked || false)
+  const [blockedReason, setBlockedReason] = useState(task.blockedReason || "")
 
   // Reset form when task changes
   useEffect(() => {
@@ -32,6 +32,8 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
     setPriority(task.priority)
     setAssignee(task.assignee || "")
     setTags(task.tags.join(", "))
+    setIsBlocked(task.isBlocked || false)
+    setBlockedReason(task.blockedReason || "")
   }, [task])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,6 +45,8 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
         priority,
         assignee: assignee.trim() || undefined,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+        isBlocked,
+        blockedReason: blockedReason.trim() || undefined,
         updatedAt: new Date(),
       })
       setOpen(false)
@@ -126,6 +130,30 @@ export function EditTaskDialog({ task, onUpdate }: EditTaskDialogProps) {
               onChange={(e) => setTags(e.target.value)}
               placeholder="bug, frontend, urgent (comma separated)"
             />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="edit-isBlocked"
+                checked={isBlocked}
+                onChange={(e) => setIsBlocked(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <Label htmlFor="edit-isBlocked">Task is blocked</Label>
+            </div>
+            {isBlocked && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-blockedReason">Blocked Reason</Label>
+                <Input
+                  id="edit-blockedReason"
+                  value={blockedReason}
+                  onChange={(e) => setBlockedReason(e.target.value)}
+                  placeholder="Why is this task blocked?"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">

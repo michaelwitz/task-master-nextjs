@@ -9,6 +9,7 @@ import { X, Flame, TrendingUp } from "lucide-react"
 import { Task, Priority } from "@/types"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 import { EditTaskDialog } from "@/components/ui/edit-task-dialog"
+import { PRIORITY_COLORS } from "@/lib/utils/constants"
 
 interface TaskCardProps {
   task: Task
@@ -24,21 +25,6 @@ const getPriorityIcon = (priority: Priority) => {
       return <TrendingUp className="h-4 w-4 text-red-500" />
     default:
       return null
-  }
-}
-
-const getPriorityColor = (priority: Priority) => {
-  switch (priority) {
-    case 'Critical':
-      return 'text-orange-600 bg-orange-50 dark:bg-orange-950 dark:text-orange-400'
-    case 'High':
-      return 'text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400'
-    case 'Medium':
-      return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400'
-    case 'Low':
-      return 'text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400'
-    default:
-      return 'text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-400'
   }
 }
 
@@ -75,14 +61,16 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
       style={style}
       className={`mb-3 cursor-grab active:cursor-grabbing relative ${
         isDragging ? "shadow-lg" : ""
-      }`}
+      } ${task.isBlocked ? "ring-2 ring-yellow-400" : ""}`}
       {...attributes}
       {...listeners}
     >
       <CardContent className="p-3 pt-2">
         {/* Title Section */}
         <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex-1 text-sm font-medium flex items-center gap-2">
+          <div
+            className="flex-1 text-sm font-medium cursor-text flex items-center gap-2"
+          >
             {(task.priority === 'Critical' || task.priority === 'High') && (
               <span className="flex-shrink-0">
                 {getPriorityIcon(task.priority)}
@@ -107,12 +95,17 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
         <div className="space-y-2">
           {/* Priority Badge */}
           <div className="flex items-center gap-2">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityColor(task.priority)}`}>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${PRIORITY_COLORS[task.priority]}`}>
               {task.priority}
             </span>
-            {task.storyPoints && (
+            {task.storyPoints !== undefined && task.storyPoints !== null && (
               <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
                 {task.storyPoints} SP
+              </span>
+            )}
+            {task.isBlocked && (
+              <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full font-medium">
+                BLOCKED
               </span>
             )}
           </div>
@@ -121,6 +114,13 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
           {task.assignee && (
             <div className="text-xs text-muted-foreground">
               <span className="font-medium">Assignee:</span> {task.assignee}
+            </div>
+          )}
+
+          {/* Blocked Reason */}
+          {task.isBlocked && task.blockedReason && (
+            <div className="text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 p-2 rounded">
+              <span className="font-medium">Blocked:</span> {task.blockedReason}
             </div>
           )}
 

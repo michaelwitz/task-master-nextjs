@@ -1,6 +1,14 @@
 export type TaskStatus = 'todo' | 'in-progress' | 'in-review' | 'done'
 export type Priority = 'Low' | 'Medium' | 'High' | 'Critical'
 
+export interface Project {
+  id: string
+  title: string
+  leader: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export interface Task {
   id: string
   title: string
@@ -9,6 +17,8 @@ export interface Task {
   priority: Priority
   assignee?: string
   tags: string[]
+  isBlocked?: boolean
+  blockedReason?: string
   createdAt: Date
   updatedAt: Date
   completedAt?: Date
