@@ -35,7 +35,7 @@ A modern, full-stack task management application built with Next.js 15, TypeScri
 
 ```bash
 git clone <repository-url>
-cd nextjs-team-tasks
+cd task-master-nextjs
 ```
 
 ### 2. Start the Application
