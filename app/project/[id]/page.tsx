@@ -2,12 +2,17 @@
 
 import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { KanbanBoard } from "@/components/kanban-board"
+import { Button } from "@/components/ui/button"
+import { NewTaskDialog } from "@/components/ui/new-task-dialog"
+import { ArrowLeft, Plus } from "lucide-react"
 import { Project, Task } from "@/types"
 
 export default function ProjectPage() {
   const params = useParams()
+  const router = useRouter()
   const projectId = params.id as string
   
   const [project, setProject] = useState<Project | null>(null)
@@ -129,10 +134,37 @@ export default function ProjectPage() {
         <ThemeToggle />
       </div>
       
-      {/* Header */}
+      {/* Header with Navigation */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="relative py-4">
-          <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative py-4 px-6">
+          {/* Left: Navigation Buttons */}
+          <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Projects
+            </Button>
+            <NewTaskDialog 
+              onCreateTask={handleCreateTask}
+              trigger={
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Task
+                </Button>
+              }
+            />
+          </div>
+          
+          {/* Center: Project Title */}
+          <div className="flex items-center justify-center">
             <span className="text-lg font-medium text-blue-600 dark:text-blue-400">
               {project.title}
             </span>
@@ -145,7 +177,6 @@ export default function ProjectPage() {
         tasks={tasks}
         onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}
-        onCreateTask={handleCreateTask}
         onReorderTasks={handleReorderTasks}
       />
     </div>

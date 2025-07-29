@@ -31,7 +31,6 @@ interface KanbanBoardProps {
   tasks: Task[]
   onUpdateTask: (id: string | number, updates: Partial<Task>) => void
   onDeleteTask: (id: string | number) => void
-  onCreateTask: (task: Partial<Task>) => void
   onReorderTasks: (taskId: number, newStatus: TaskStatus, newPosition: number) => void
 }
 
@@ -39,7 +38,6 @@ export function KanbanBoard({
   tasks, 
   onUpdateTask, 
   onDeleteTask, 
-  onCreateTask,
   onReorderTasks 
 }: KanbanBoardProps) {
 const router = useRouter()
@@ -151,32 +149,6 @@ if (activeTask.status === newStatus) {
 
   return (
     <div className="p-6">
-      {/* Navigation Buttons */}
-      <div className="mb-4 flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Projects
-        </Button>
-        <NewTaskDialog 
-          onCreateTask={onCreateTask}
-          trigger={
-            <Button
-              variant="default"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Task
-            </Button>
-          }
-        />
-      </div>
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
