@@ -3,11 +3,12 @@ import { dbService } from '@/lib/db/service'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; taskId: string } }
+  { params }: { params: Promise<{ id: string; taskId: string }> }
 ) {
   try {
-    const projectId = parseInt(params.id)
-    const taskId = parseInt(params.taskId)
+    const { id, taskId: taskIdParam } = await params
+    const projectId = parseInt(id)
+    const taskId = parseInt(taskIdParam)
     
     if (isNaN(projectId) || isNaN(taskId)) {
       return NextResponse.json({ error: 'Invalid project or task ID' }, { status: 400 })
