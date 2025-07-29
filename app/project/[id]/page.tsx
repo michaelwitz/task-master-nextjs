@@ -135,7 +135,7 @@ export default function ProjectPage() {
       </div>
       
       {/* Header with Navigation */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="relative py-4 px-6">
           {/* Left: Navigation Buttons */}
           <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2">

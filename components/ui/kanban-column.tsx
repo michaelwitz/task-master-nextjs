@@ -39,7 +39,7 @@ export function KanbanColumn({
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 flex-1 overflow-y-auto">
+      <CardContent className="pt-3 flex-1 overflow-y-auto">
         <div ref={setNodeRef} className="h-full">
           <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
