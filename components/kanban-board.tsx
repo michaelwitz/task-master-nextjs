@@ -25,6 +25,7 @@ import { KANBAN_COLUMNS } from "@/lib/utils/constants"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Plus } from "lucide-react"
 import { NewTaskDialog } from "@/components/ui/new-task-dialog"
+import { useToast } from "@/components/ui/toast"
 
 interface KanbanBoardProps {
   tasks: Task[]
@@ -41,9 +42,10 @@ export function KanbanBoard({
   onCreateTask,
   onReorderTasks 
 }: KanbanBoardProps) {
-  const router = useRouter()
-  const [activeTask, setActiveTask] = useState<Task | null>(null)
-  const [localTasks, setLocalTasks] = useState<Task[]>(tasks)
+const router = useRouter()
+const { toast } = useToast()
+const [activeTask, setActiveTask] = useState<Task | null>(null)
+const [localTasks, setLocalTasks] = useState<Task[]>(tasks)
 
   // Update local tasks when tasks prop changes
   useEffect(() => {
@@ -103,7 +105,7 @@ export function KanbanBoard({
       if (overIndex === -1) return
 
       // If moving within the same column, we need to account for the current position
-      if (activeTask.status === newStatus) {
+if (activeTask.status === newStatus) {
         const activeIndex = columnTasks.findIndex(t => t.id === activeId)
         if (activeIndex === -1) return
         
@@ -118,6 +120,17 @@ export function KanbanBoard({
         // Moving to a different column, insert at the target position
         targetPosition = overIndex
       }
+    }
+
+    // Check if task is blocked and being moved to 'Done'
+    if (newStatus === 'done' && activeTask.isBlocked) {
+      toast({
+        title: "Blocked Task",
+        description: "Cannot move blocked tasks to 'Done'!",
+        type: "warning",
+      })
+      setLocalTasks(tasks) // revert changes
+      return
     }
 
     // Call the reorder function

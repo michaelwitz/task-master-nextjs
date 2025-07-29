@@ -180,3 +180,25 @@
 .w-md-editor-preview blockquote {
   @apply border-l-4 border-border bg-muted/50;
 }
+
+/* Toast Animations */
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-name: slide-in-from-right;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+}
+
+.slide-in-from-right-full {
+  animation-name: slide-in-from-right;
+}
