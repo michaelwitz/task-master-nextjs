@@ -29,6 +29,7 @@ import { useToast } from "@/components/ui/toast"
 
 interface KanbanBoardProps {
   tasks: Task[]
+  projectId: number
   onUpdateTask: (id: string | number, updates: Partial<Task>) => void
   onDeleteTask: (id: string | number) => void
   onReorderTasks: (taskId: number, newStatus: TaskStatus, newPosition: number) => void
@@ -36,6 +37,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ 
   tasks, 
+  projectId,
   onUpdateTask, 
   onDeleteTask, 
   onReorderTasks 
@@ -162,6 +164,7 @@ if (activeTask.status === newStatus) {
               id={column.id}
               title={column.title}
               tasks={getTasksByStatus(column.id)}
+              projectId={projectId}
               onUpdateTask={onUpdateTask}
               onDeleteTask={onDeleteTask}
             />
@@ -172,6 +175,7 @@ if (activeTask.status === newStatus) {
           {activeTask ? (
             <TaskCard
               task={activeTask}
+              projectId={projectId}
               onUpdate={onUpdateTask}
               onDelete={onDeleteTask}
             />

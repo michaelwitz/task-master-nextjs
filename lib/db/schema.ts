@@ -50,6 +50,25 @@ export const TASK_TAGS = pgTable('TASK_TAGS', {
   tag: varchar('tag', { length: 100 }).notNull().references(() => TAGS.tag, { onDelete: 'cascade' }),
 })
 
+// Image metadata table
+export const IMAGE_METADATA = pgTable('IMAGE_METADATA', {
+  id: serial('id').primaryKey(),
+  task_id: integer('task_id').notNull().references(() => TASKS.id, { onDelete: 'cascade' }),
+  original_name: varchar('original_name', { length: 255 }).notNull(),
+  content_type: varchar('content_type', { length: 100 }).notNull(),
+  file_size: integer('file_size').notNull(),
+  url: varchar('url', { length: 500 }).notNull(), // Local DB URL or S3 URL
+  storage_type: varchar('storage_type', { length: 20 }).notNull().default('local'), // 'local' or 's3'
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// Image binary data table (for local storage)
+export const IMAGE_DATA = pgTable('IMAGE_DATA', {
+  id: integer('id').primaryKey().references(() => IMAGE_METADATA.id, { onDelete: 'cascade' }),
+  data: text('data').notNull(), // Binary image data as base64 string
+  thumbnail_data: text('thumbnail_data'), // Optional thumbnail data as base64 string
+})
+
 // Indexes for better performance
 // export const tasksProjectIdIdx = index('tasks_project_id_idx').on(TASKS.project_id)
 // export const tasksStatusIdx = index('tasks_status_idx').on(TASKS.status)
@@ -84,6 +103,7 @@ export const tasksRelations = relations(TASKS, ({ one, many }) => ({
     references: [USERS.id],
   }),
   taskTags: many(TASK_TAGS),
+  images: many(IMAGE_METADATA),
 }))
 
 export const tagsRelations = relations(TAGS, ({ many }) => ({
@@ -99,4 +119,22 @@ export const taskTagsRelations = relations(TASK_TAGS, ({ one }) => ({
     fields: [TASK_TAGS.tag],
     references: [TAGS.tag],
   }),
-})) 
+}))
+
+export const imageMetadataRelations = relations(IMAGE_METADATA, ({ one }) => ({
+  task: one(TASKS, {
+    fields: [IMAGE_METADATA.task_id],
+    references: [TASKS.id],
+  }),
+  imageData: one(IMAGE_DATA, {
+    fields: [IMAGE_METADATA.id],
+    references: [IMAGE_DATA.id],
+  }),
+}))
+
+export const imageDataRelations = relations(IMAGE_DATA, ({ one }) => ({
+  metadata: one(IMAGE_METADATA, {
+    fields: [IMAGE_DATA.id],
+    references: [IMAGE_METADATA.id],
+  }),
+}))

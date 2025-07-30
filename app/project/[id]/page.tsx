@@ -44,7 +44,7 @@ export default function ProjectPage() {
     }
 
     loadData()
-  }, []) // Empty dependency array - only run once
+  }, [projectId]) // Include projectId in dependency array
 
   async function handleUpdateTask(id: string | number, updates: Partial<Task>) {
     try {
@@ -175,6 +175,7 @@ export default function ProjectPage() {
       {/* Kanban Board */}
       <KanbanBoard 
         tasks={tasks}
+        projectId={parseInt(projectId)}
         onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}
         onReorderTasks={handleReorderTasks}

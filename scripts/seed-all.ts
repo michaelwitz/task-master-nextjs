@@ -28,23 +28,23 @@ async function seedAll() {
     const projects = [
       { 
         title: 'Website Redesign', 
-        leaderId: createdUsers[0].id // John Doe
+        leaderId: createdUsers[0].id as number // John Doe
       },
       { 
         title: 'Mobile App Development', 
-        leaderId: createdUsers[1].id // Jane Smith
+        leaderId: createdUsers[1].id as number // Jane Smith
       },
       { 
         title: 'Database Migration', 
-        leaderId: createdUsers[2].id // Bob Johnson
+        leaderId: createdUsers[2].id as number // Bob Johnson
       },
       { 
         title: 'API Integration', 
-        leaderId: createdUsers[3].id // Alice Williams
+        leaderId: createdUsers[3].id as number // Alice Williams
       },
       { 
         title: 'Security Audit', 
-        leaderId: createdUsers[4].id // Charlie Brown
+        leaderId: createdUsers[4].id as number // Charlie Brown
       }
     ]
 
@@ -64,7 +64,7 @@ async function seedAll() {
         title: 'Design Homepage Mockup',
         status: 'todo' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[1].id, // Jane Smith
+        assigneeId: createdUsers[1].id as number, // Jane Smith
         storyPoints: 8,
         description: 'Create wireframes and mockups for the new homepage design. Focus on user experience and modern design principles.',
         tags: ['design', 'frontend', 'ux']
@@ -74,7 +74,7 @@ async function seedAll() {
         title: 'Implement Responsive Layout',
         status: 'in-progress' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[0].id, // John Doe
+        assigneeId: createdUsers[0].id as number, // John Doe
         storyPoints: 13,
         description: 'Build the responsive layout using CSS Grid and Flexbox. Ensure compatibility across all devices.',
         tags: ['frontend', 'css', 'responsive']
@@ -84,7 +84,7 @@ async function seedAll() {
         title: 'Optimize Images and Assets',
         status: 'in-review' as const,
         priority: 'Medium' as const,
-        assigneeId: createdUsers[2].id, // Bob Johnson
+        assigneeId: createdUsers[2].id as number, // Bob Johnson
         storyPoints: 5,
         description: 'Compress and optimize all images for web. Implement lazy loading for better performance.',
         tags: ['performance', 'optimization']
@@ -94,7 +94,7 @@ async function seedAll() {
         title: 'Write Documentation',
         status: 'done' as const,
         priority: 'Low' as const,
-        assigneeId: createdUsers[3].id, // Alice Williams
+        assigneeId: createdUsers[3].id as number, // Alice Williams
         storyPoints: 3,
         description: 'Create comprehensive documentation for the new website design and implementation.',
         tags: ['documentation']
@@ -106,7 +106,7 @@ async function seedAll() {
         title: 'Set up React Native Project',
         status: 'done' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[1].id, // Jane Smith
+        assigneeId: createdUsers[1].id as number, // Jane Smith
         storyPoints: 5,
         description: 'Initialize React Native project with TypeScript and configure development environment.',
         tags: ['mobile', 'react-native', 'setup']
@@ -116,7 +116,7 @@ async function seedAll() {
         title: 'Design App Navigation',
         status: 'in-progress' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[0].id, // John Doe
+        assigneeId: createdUsers[0].id as number, // John Doe
         storyPoints: 8,
         description: 'Implement bottom tab navigation and stack navigation for different app screens.',
         tags: ['mobile', 'navigation', 'ui']
@@ -126,7 +126,7 @@ async function seedAll() {
         title: 'Integrate API Endpoints',
         status: 'todo' as const,
         priority: 'Medium' as const,
-        assigneeId: createdUsers[2].id, // Bob Johnson
+        assigneeId: createdUsers[2].id as number, // Bob Johnson
         storyPoints: 13,
         description: 'Connect the mobile app to backend API endpoints for data fetching and user authentication.',
         tags: ['api', 'integration', 'backend']
@@ -136,7 +136,7 @@ async function seedAll() {
         title: 'Test on iOS Simulator',
         status: 'todo' as const,
         priority: 'Medium' as const,
-        assigneeId: createdUsers[4].id, // Charlie Brown
+        assigneeId: createdUsers[4].id as number, // Charlie Brown
         storyPoints: 5,
         description: 'Run comprehensive tests on iOS simulator to ensure app functionality and UI consistency.',
         tags: ['testing', 'ios', 'qa']
@@ -148,7 +148,7 @@ async function seedAll() {
         title: 'Backup Current Database',
         status: 'done' as const,
         priority: 'Critical' as const,
-        assigneeId: createdUsers[2].id, // Bob Johnson
+        assigneeId: createdUsers[2].id as number, // Bob Johnson
         storyPoints: 3,
         description: 'Create full backup of current database before migration. Verify backup integrity.',
         tags: ['database', 'backup', 'migration']
@@ -158,7 +158,7 @@ async function seedAll() {
         title: 'Create Migration Scripts',
         status: 'in-progress' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[2].id, // Bob Johnson
+        assigneeId: createdUsers[2].id as number, // Bob Johnson
         storyPoints: 21,
         description: 'Write SQL migration scripts to transform current schema to new structure. Include rollback procedures.',
         tags: ['database', 'migration', 'sql']
@@ -168,7 +168,7 @@ async function seedAll() {
         title: 'Test Migration Process',
         status: 'todo' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[3].id, // Alice Williams
+        assigneeId: createdUsers[3].id as number, // Alice Williams
         storyPoints: 8,
         description: 'Test migration process on staging environment. Verify data integrity and performance.',
         tags: ['testing', 'migration', 'staging']
@@ -180,7 +180,7 @@ async function seedAll() {
         title: 'Research Third-party APIs',
         status: 'done' as const,
         priority: 'Medium' as const,
-        assigneeId: createdUsers[3].id, // Alice Williams
+        assigneeId: createdUsers[3].id as number, // Alice Williams
         storyPoints: 5,
         description: 'Research and evaluate third-party APIs for payment processing and email services.',
         tags: ['research', 'api', 'integration']
@@ -190,7 +190,7 @@ async function seedAll() {
         title: 'Implement Payment Gateway',
         status: 'in-progress' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[0].id, // John Doe
+        assigneeId: createdUsers[0].id as number, // John Doe
         storyPoints: 13,
         description: 'Integrate Stripe payment gateway for processing online payments securely.',
         tags: ['payment', 'stripe', 'security']
@@ -200,7 +200,7 @@ async function seedAll() {
         title: 'Set up Email Service',
         status: 'todo' as const,
         priority: 'Medium' as const,
-        assigneeId: createdUsers[1].id, // Jane Smith
+        assigneeId: createdUsers[1].id as number, // Jane Smith
         storyPoints: 8,
         description: 'Configure SendGrid for transactional emails and marketing campaigns.',
         tags: ['email', 'sendgrid', 'marketing']
@@ -212,7 +212,7 @@ async function seedAll() {
         title: 'Vulnerability Assessment',
         status: 'in-progress' as const,
         priority: 'Critical' as const,
-        assigneeId: createdUsers[4].id, // Charlie Brown
+        assigneeId: createdUsers[4].id as number, // Charlie Brown
         storyPoints: 21,
         description: 'Conduct comprehensive security audit of all systems and identify potential vulnerabilities.',
         tags: ['security', 'audit', 'vulnerability']
@@ -222,7 +222,7 @@ async function seedAll() {
         title: 'Update Security Policies',
         status: 'todo' as const,
         priority: 'High' as const,
-        assigneeId: createdUsers[4].id, // Charlie Brown
+        assigneeId: createdUsers[4].id as number, // Charlie Brown
         storyPoints: 8,
         description: 'Review and update security policies and procedures based on audit findings.',
         tags: ['security', 'policies', 'compliance']
@@ -232,7 +232,7 @@ async function seedAll() {
         title: 'Implement Security Fixes',
         status: 'todo' as const,
         priority: 'Critical' as const,
-        assigneeId: createdUsers[2].id, // Bob Johnson
+        assigneeId: createdUsers[2].id as number, // Bob Johnson
         storyPoints: 13,
         description: 'Implement security patches and fixes for identified vulnerabilities.',
         tags: ['security', 'patches', 'fixes']

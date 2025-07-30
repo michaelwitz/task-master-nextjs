@@ -19,8 +19,8 @@ export function camelToSnake(str: string): string {
 /**
  * Maps database object to JavaScript object (snake_case to camelCase)
  */
-export function mapDbToJs<T extends Record<string, any>>(dbObject: T): Record<string, any> {
-  const jsObject: Record<string, any> = {}
+export function mapDbToJs<T extends Record<string, unknown>>(dbObject: T): Record<string, unknown> {
+  const jsObject: Record<string, unknown> = {}
   
   for (const [key, value] of Object.entries(dbObject)) {
     const camelKey = snakeToCamel(key)
@@ -33,8 +33,8 @@ export function mapDbToJs<T extends Record<string, any>>(dbObject: T): Record<st
 /**
  * Maps JavaScript object to database object (camelCase to snake_case)
  */
-export function mapJsToDb<T extends Record<string, any>>(jsObject: T): Record<string, any> {
-  const dbObject: Record<string, any> = {}
+export function mapJsToDb<T extends Record<string, unknown>>(jsObject: T): Record<string, unknown> {
+  const dbObject: Record<string, unknown> = {}
   
   for (const [key, value] of Object.entries(jsObject)) {
     const snakeKey = camelToSnake(key)
@@ -47,13 +47,13 @@ export function mapJsToDb<T extends Record<string, any>>(jsObject: T): Record<st
 /**
  * Maps an array of database objects to JavaScript objects
  */
-export function mapDbArrayToJs<T extends Record<string, any>>(dbArray: T[]): Record<string, any>[] {
+export function mapDbArrayToJs<T extends Record<string, unknown>>(dbArray: T[]): Record<string, unknown>[] {
   return dbArray.map(item => mapDbToJs(item))
 }
 
 /**
  * Maps an array of JavaScript objects to database objects
  */
-export function mapJsArrayToDb<T extends Record<string, any>>(jsArray: T[]): Record<string, any>[] {
+export function mapJsArrayToDb<T extends Record<string, unknown>>(jsArray: T[]): Record<string, unknown>[] {
   return jsArray.map(item => mapJsToDb(item))
 } 

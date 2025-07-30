@@ -7,6 +7,7 @@ A modern, full-stack task management application built with Next.js 15, TypeScri
 - **Kanban Board**: Drag-and-drop task management across multiple columns (Todo, In Progress, In Review, Done)
 - **Project Management**: Create and manage multiple projects with team leaders
 - **User Management**: Assign tasks to team members with type-ahead search
+- **Image Attachments**: Upload, view, and delete images attached to tasks with thumbnail previews
 - **Markdown Support**: Rich text descriptions for tasks with formatting toolbar
 - **Real-time Updates**: Optimistic UI updates with persistent database storage
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -191,6 +192,8 @@ All tasks include:
 - **PROJECTS**: Projects with title and leader assignment
 - **TASKS**: Tasks with title, description, status, priority, assignee, and position
 - **TAGS**: Task tags for categorization
+- **IMAGE_METADATA**: Image information including filename, content type, and task association
+- **IMAGE_DATA**: Binary image data stored as base64 with optional thumbnails
 
 ### Key Features
 
@@ -214,6 +217,14 @@ All tasks include:
 2. Use the "Add Task" button to create new tasks
 3. Drag and drop tasks between columns
 4. Click on tasks to edit details, assignees, and descriptions
+
+### Image Attachments
+
+1. **Adding Images**: Click the edit button on any task, then use "Add Images" in the Images section
+2. **Multiple Uploads**: Select multiple images at once or add them in batches before saving
+3. **Viewing Images**: Images are displayed as thumbnails in the task edit dialog
+4. **Deleting Images**: Hover over any image and click the red X to mark for deletion
+5. **Staged Operations**: All image uploads and deletions are staged until you click "Save Changes"
 
 ### User Management
 

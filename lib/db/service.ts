@@ -1,5 +1,5 @@
 import { db } from './index'
-import { USERS, TAGS, PROJECTS, TASKS, TASK_TAGS } from './schema'
+import { USERS, TAGS, PROJECTS, TASKS, TASK_TAGS, IMAGE_METADATA, IMAGE_DATA } from './schema'
 import { eq, and, ilike, desc, asc, or, sql } from 'drizzle-orm'
 import type { Task, Priority } from '@/types'
 import { mapDbToJs, mapJsToDb, mapDbArrayToJs } from '@/lib/utils/property-mapper'
@@ -189,6 +189,22 @@ export class DatabaseService {
     return tasksWithTags
   }
 
+  async getTaskImages(taskId: number) {
+    const images = await db
+      .select({
+        id: IMAGE_METADATA.id,
+        original_name: IMAGE_METADATA.original_name,
+        content_type: IMAGE_METADATA.content_type,
+        url: IMAGE_METADATA.url,
+        thumbnailData: IMAGE_DATA.thumbnail_data,
+      })
+      .from(IMAGE_METADATA)
+      .leftJoin(IMAGE_DATA, eq(IMAGE_METADATA.id, IMAGE_DATA.id))
+      .where(eq(IMAGE_METADATA.task_id, taskId))
+
+    return mapDbArrayToJs(images)
+  }
+
   async createTask(projectId: number, taskData: {
     title: string
     storyPoints?: number
@@ -252,25 +268,26 @@ export class DatabaseService {
   }
 
   async updateTask(projectId: number, taskId: number, updates: Partial<Task>) {
-    // Convert camelCase updates to snake_case for database
-    const dbUpdates = mapJsToDb(updates)
+    // Build update object directly to ensure proper types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = {}
+    
+    if (updates.title !== undefined) updateData.title = updates.title
+    if (updates.status !== undefined) updateData.status = updates.status
+    if (updates.storyPoints !== undefined) updateData.story_points = updates.storyPoints
+    if (updates.priority !== undefined) updateData.priority = updates.priority
+    if (updates.description !== undefined) updateData.description = updates.description
+    if (updates.isBlocked !== undefined) updateData.is_blocked = updates.isBlocked
+    if (updates.blockedReason !== undefined) updateData.blocked_reason = updates.blockedReason
+    if (updates.completedAt !== undefined) updateData.completed_at = updates.completedAt
+    if (updates.assigneeId !== undefined) updateData.assignee_id = updates.assigneeId
+    
+    updateData.updated_at = new Date()
     
     // Update the task
     const [task] = await db
       .update(TASKS)
-      .set({
-        title: dbUpdates.title,
-        status: dbUpdates.status,
-        story_points: dbUpdates.story_points,
-        priority: dbUpdates.priority,
-        assignee_id: updates.assignee ? 
-          (await this.getUserIdByName(updates.assignee))?.id : undefined,
-        description: dbUpdates.description,
-        is_blocked: dbUpdates.is_blocked,
-        blocked_reason: dbUpdates.blocked_reason,
-        completed_at: dbUpdates.completed_at,
-        updated_at: new Date(),
-      })
+      .set(updateData)
       .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
       .returning()
 

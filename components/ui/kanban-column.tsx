@@ -10,6 +10,7 @@ interface KanbanColumnProps {
   id: TaskStatus
   title: string
   tasks: Task[]
+  projectId: number
   onUpdateTask: (id: string | number, updates: Partial<Task>) => void
   onDeleteTask: (id: string | number) => void
 }
@@ -18,6 +19,7 @@ export function KanbanColumn({
   id,
   title,
   tasks,
+  projectId,
   onUpdateTask,
   onDeleteTask,
 }: KanbanColumnProps) {
@@ -47,6 +49,7 @@ export function KanbanColumn({
                 <TaskCard
                   key={task.id}
                   task={task}
+                  projectId={projectId}
                   onUpdate={onUpdateTask}
                   onDelete={onDeleteTask}
                 />

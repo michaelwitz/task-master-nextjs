@@ -22,11 +22,12 @@ export function MarkdownEditor({
   className 
 }: MarkdownEditorProps) {
   const [isPreview, setIsPreview] = useState(false)
-  const editorRef = useRef<any>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
 
   const insertMarkdown = (prefix: string, suffix: string = "", placeholder: string = "text") => {
     // Get the textarea from the MDEditor component
-    const textarea = editorRef.current?.textarea || 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const textarea = (editorRef.current as any)?.textarea || 
                     editorRef.current?.querySelector('textarea') ||
                     document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement
     

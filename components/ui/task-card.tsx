@@ -13,6 +13,7 @@ import { PRIORITY_COLORS } from "@/lib/utils/constants"
 
 interface TaskCardProps {
   task: Task
+  projectId: number
   onUpdate: (id: string | number, updates: Partial<Task>) => void
   onDelete: (id: string | number) => void
 }
@@ -28,7 +29,7 @@ const getPriorityIcon = (priority: Priority) => {
   }
 }
 
-export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
+export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
@@ -82,6 +83,7 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
           <div className="flex gap-1">
             <EditTaskDialog 
               task={task} 
+              projectId={projectId}
               onUpdate={onUpdate} 
               onOpenChange={setIsEditDialogOpen}
             />

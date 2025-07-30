@@ -30,7 +30,7 @@ export function DeleteConfirmationDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Task</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{title}"? This action cannot be undone.
+        Are you sure you want to delete the task &ldquo;{title}&rdquo;? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

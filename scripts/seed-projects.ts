@@ -14,23 +14,23 @@ async function seedProjects() {
     const projects = [
       { 
         title: 'Website Redesign', 
-        leaderId: users[0].id // John Doe
+        leaderId: users[0].id as number // John Doe
       },
       { 
         title: 'Mobile App Development', 
-        leaderId: users[1].id // Jane Smith
+        leaderId: users[1].id as number // Jane Smith
       },
       { 
         title: 'Database Migration', 
-        leaderId: users[2].id // Bob Johnson
+        leaderId: users[2].id as number // Bob Johnson
       },
       { 
         title: 'API Integration', 
-        leaderId: users[3].id // Alice Williams
+        leaderId: users[3].id as number // Alice Williams
       },
       { 
         title: 'Security Audit', 
-        leaderId: users[4].id // Charlie Brown
+        leaderId: users[4].id as number // Charlie Brown
       }
     ]
 

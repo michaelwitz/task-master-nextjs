@@ -1,4 +1,7 @@
 import { dbService } from '../lib/db/service'
+import { db } from '../lib/db'
+import { PROJECTS } from '../lib/db/schema'
+import type { Priority } from '../types'
 
 async function seedTasks() {
   try {
@@ -6,7 +9,7 @@ async function seedTasks() {
     
     // Get all users and projects
     const users = await dbService.getUsers()
-    const projects = await dbService.getProjects()
+    const projects = await db.select({ id: PROJECTS.id, title: PROJECTS.title }).from(PROJECTS).orderBy(PROJECTS.id)
     
     if (users.length === 0) {
       console.log('No users found. Please run seed-users.ts first.')
@@ -25,7 +28,7 @@ async function seedTasks() {
         title: 'Design Homepage Mockup',
         status: 'todo',
         priority: 'High',
-        assigneeId: users[1].id, // Jane Smith
+        assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 8,
         description: 'Create wireframes and mockups for the new homepage design. Focus on user experience and modern design principles.',
         tags: ['design', 'frontend', 'ux']
@@ -35,7 +38,7 @@ async function seedTasks() {
         title: 'Implement Responsive Layout',
         status: 'in-progress',
         priority: 'High',
-        assigneeId: users[0].id, // John Doe
+        assigneeId: users[0].id as number, // John Doe
         storyPoints: 13,
         description: 'Build the responsive layout using CSS Grid and Flexbox. Ensure compatibility across all devices.',
         tags: ['frontend', 'css', 'responsive']
@@ -45,7 +48,7 @@ async function seedTasks() {
         title: 'Optimize Images and Assets',
         status: 'in-review',
         priority: 'Medium',
-        assigneeId: users[2].id, // Bob Johnson
+        assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 5,
         description: 'Compress and optimize all images for web. Implement lazy loading for better performance.',
         tags: ['performance', 'optimization']
@@ -55,7 +58,7 @@ async function seedTasks() {
         title: 'Write Documentation',
         status: 'done',
         priority: 'Low',
-        assigneeId: users[3].id, // Alice Williams
+        assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 3,
         description: 'Create comprehensive documentation for the new website design and implementation.',
         tags: ['documentation']
@@ -67,7 +70,7 @@ async function seedTasks() {
         title: 'Set up React Native Project',
         status: 'done',
         priority: 'High',
-        assigneeId: users[1].id, // Jane Smith
+        assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 5,
         description: 'Initialize React Native project with TypeScript and configure development environment.',
         tags: ['mobile', 'react-native', 'setup']
@@ -77,7 +80,7 @@ async function seedTasks() {
         title: 'Design App Navigation',
         status: 'in-progress',
         priority: 'High',
-        assigneeId: users[0].id, // John Doe
+        assigneeId: users[0].id as number, // John Doe
         storyPoints: 8,
         description: 'Implement bottom tab navigation and stack navigation for different app screens.',
         tags: ['mobile', 'navigation', 'ui']
@@ -87,7 +90,7 @@ async function seedTasks() {
         title: 'Integrate API Endpoints',
         status: 'todo',
         priority: 'Medium',
-        assigneeId: users[2].id, // Bob Johnson
+        assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 13,
         description: 'Connect the mobile app to backend API endpoints for data fetching and user authentication.',
         tags: ['api', 'integration', 'backend']
@@ -97,7 +100,7 @@ async function seedTasks() {
         title: 'Test on iOS Simulator',
         status: 'todo',
         priority: 'Medium',
-        assigneeId: users[4].id, // Charlie Brown
+        assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 5,
         description: 'Run comprehensive tests on iOS simulator to ensure app functionality and UI consistency.',
         tags: ['testing', 'ios', 'qa']
@@ -109,7 +112,7 @@ async function seedTasks() {
         title: 'Backup Current Database',
         status: 'done',
         priority: 'Critical',
-        assigneeId: users[2].id, // Bob Johnson
+        assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 3,
         description: 'Create full backup of current database before migration. Verify backup integrity.',
         tags: ['database', 'backup', 'migration']
@@ -119,7 +122,7 @@ async function seedTasks() {
         title: 'Create Migration Scripts',
         status: 'in-progress',
         priority: 'High',
-        assigneeId: users[2].id, // Bob Johnson
+        assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 21,
         description: 'Write SQL migration scripts to transform current schema to new structure. Include rollback procedures.',
         tags: ['database', 'migration', 'sql']
@@ -129,7 +132,7 @@ async function seedTasks() {
         title: 'Test Migration Process',
         status: 'todo',
         priority: 'High',
-        assigneeId: users[3].id, // Alice Williams
+        assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 8,
         description: 'Test migration process on staging environment. Verify data integrity and performance.',
         tags: ['testing', 'migration', 'staging']
@@ -141,7 +144,7 @@ async function seedTasks() {
         title: 'Research Third-party APIs',
         status: 'done',
         priority: 'Medium',
-        assigneeId: users[3].id, // Alice Williams
+        assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 5,
         description: 'Research and evaluate third-party APIs for payment processing and email services.',
         tags: ['research', 'api', 'integration']
@@ -151,7 +154,7 @@ async function seedTasks() {
         title: 'Implement Payment Gateway',
         status: 'in-progress',
         priority: 'High',
-        assigneeId: users[0].id, // John Doe
+        assigneeId: users[0].id as number, // John Doe
         storyPoints: 13,
         description: 'Integrate Stripe payment gateway for processing online payments securely.',
         tags: ['payment', 'stripe', 'security']
@@ -161,7 +164,7 @@ async function seedTasks() {
         title: 'Set up Email Service',
         status: 'todo',
         priority: 'Medium',
-        assigneeId: users[1].id, // Jane Smith
+        assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 8,
         description: 'Configure SendGrid for transactional emails and marketing campaigns.',
         tags: ['email', 'sendgrid', 'marketing']
@@ -173,7 +176,7 @@ async function seedTasks() {
         title: 'Vulnerability Assessment',
         status: 'in-progress',
         priority: 'Critical',
-        assigneeId: users[4].id, // Charlie Brown
+        assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 21,
         description: 'Conduct comprehensive security audit of all systems and identify potential vulnerabilities.',
         tags: ['security', 'audit', 'vulnerability']
@@ -183,7 +186,7 @@ async function seedTasks() {
         title: 'Update Security Policies',
         status: 'todo',
         priority: 'High',
-        assigneeId: users[4].id, // Charlie Brown
+        assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 8,
         description: 'Review and update security policies and procedures based on audit findings.',
         tags: ['security', 'policies', 'compliance']
@@ -193,7 +196,7 @@ async function seedTasks() {
         title: 'Implement Security Fixes',
         status: 'todo',
         priority: 'Critical',
-        assigneeId: users[2].id, // Bob Johnson
+        assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 13,
         description: 'Implement security patches and fixes for identified vulnerabilities.',
         tags: ['security', 'patches', 'fixes']
@@ -204,7 +207,7 @@ async function seedTasks() {
       const createdTask = await dbService.createTask(task.projectId, {
         title: task.title,
         status: task.status,
-        priority: task.priority,
+        priority: task.priority as Priority,
         assigneeId: task.assigneeId,
         storyPoints: task.storyPoints,
         description: task.description,
