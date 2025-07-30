@@ -29,11 +29,35 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
   const searchInputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const triggerButtonRef = useRef<HTMLButtonElement>(null)
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([])
 
   // Load users on mount
   useEffect(() => {
     loadUsers()
   }, [])
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (focusedIndex >= 0 && itemRefs.current[focusedIndex] && listRef.current) {
+      const focusedItem = itemRefs.current[focusedIndex]
+      const container = listRef.current
+      
+      if (focusedItem) {
+        const itemTop = focusedItem.offsetTop
+        const itemBottom = itemTop + focusedItem.offsetHeight
+        const containerTop = container.scrollTop
+        const containerBottom = containerTop + container.clientHeight
+        
+        if (itemTop < containerTop) {
+          // Item is above visible area, scroll up
+          container.scrollTop = itemTop
+        } else if (itemBottom > containerBottom) {
+          // Item is below visible area, scroll down
+          container.scrollTop = itemBottom - container.clientHeight
+        }
+      }
+    }
+  }, [focusedIndex])
 
   const loadUsers = async () => {
     setLoading(true)
@@ -59,6 +83,11 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
         user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.lastName.toLowerCase().includes(searchQuery.toLowerCase())
       )
+
+  // Reset item refs when filtered users change
+  useEffect(() => {
+    itemRefs.current = itemRefs.current.slice(0, filteredUsers.length)
+  }, [filteredUsers.length])
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
@@ -194,6 +223,9 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
                 filteredUsers.map((user, index) => (
                   <div
                     key={user.id}
+                    ref={(el) => {
+                      itemRefs.current[index] = el
+                    }}
                     className={cn(
                       "flex items-center p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-sm",
                       index === focusedIndex && "bg-accent text-accent-foreground"

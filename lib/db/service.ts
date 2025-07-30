@@ -115,23 +115,75 @@ export class DatabaseService {
   }
 
   async getProject(id: number) {
-    const [project] = await db.select().from(PROJECTS).where(eq(PROJECTS.id, id))
-    return project ? mapDbToJs(project) : null
+    const [project] = await db
+      .select({
+        id: PROJECTS.id,
+        title: PROJECTS.title,
+        leader_id: PROJECTS.leader_id,
+        created_at: PROJECTS.created_at,
+        updated_at: PROJECTS.updated_at,
+        leader: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(PROJECTS)
+      .leftJoin(USERS, eq(PROJECTS.leader_id, USERS.id))
+      .where(eq(PROJECTS.id, id))
+
+    if (!project) {
+      return null
+    }
+
+    const mappedProject = mapDbToJs(project)
+    return {
+      ...mappedProject,
+      leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+    }
   }
 
   async updateProject(id: number, updates: { title?: string; leaderId?: number }) {
     // Convert camelCase updates to snake_case for database
     const dbUpdates = mapJsToDb(updates)
     
-    const [project] = await db
+    await db
       .update(PROJECTS)
       .set({
         ...dbUpdates,
         updated_at: new Date(),
       })
       .where(eq(PROJECTS.id, id))
-      .returning()
-    return mapDbToJs(project)
+    
+    // Fetch the updated project with leader information
+    const [project] = await db
+      .select({
+        id: PROJECTS.id,
+        title: PROJECTS.title,
+        leader_id: PROJECTS.leader_id,
+        created_at: PROJECTS.created_at,
+        updated_at: PROJECTS.updated_at,
+        leader: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(PROJECTS)
+      .leftJoin(USERS, eq(PROJECTS.leader_id, USERS.id))
+      .where(eq(PROJECTS.id, id))
+
+    if (!project) {
+      return null
+    }
+
+    const mappedProject = mapDbToJs(project)
+    return {
+      ...mappedProject,
+      leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+    }
   }
 
   async deleteProject(id: number) {
