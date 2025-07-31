@@ -13,9 +13,12 @@ import { useRouter } from "next/navigation"
 import { Project } from "@/types"
 import { UserSearch } from "@/components/ui/user-search"
 import { EditProjectDialog } from "@/components/ui/edit-project-dialog"
+import { MarkdownEditor } from "@/components/ui/markdown-editor"
 
 export default function Home() {
   const [newProjectTitle, setNewProjectTitle] = useState("")
+  const [newProjectCode, setNewProjectCode] = useState("")
+  const [newProjectDescription, setNewProjectDescription] = useState("")
   const [newProjectLeaderId, setNewProjectLeaderId] = useState("")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
@@ -44,13 +47,15 @@ export default function Home() {
   }, [])
 
   const handleCreateProject = async () => {
-    if (newProjectTitle.trim() && newProjectLeaderId) {
+    if (newProjectTitle.trim() && newProjectCode.trim() && newProjectLeaderId) {
       try {
         const response = await fetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: newProjectTitle,
+            code: newProjectCode.toUpperCase(),
+            description: newProjectDescription.trim() || undefined,
             leaderId: parseInt(newProjectLeaderId)
           }),
         })
@@ -59,6 +64,8 @@ export default function Home() {
           const newProject = await response.json()
           setProjects(prev => [...prev, newProject])
           setNewProjectTitle("")
+          setNewProjectCode("")
+          setNewProjectDescription("")
           setNewProjectLeaderId("")
           setShowCreateDialog(false)
         } else {
@@ -71,7 +78,7 @@ export default function Home() {
     }
   }
 
-  const handleUpdateProject = async (projectId: number, updates: { title: string; leaderId: number }) => {
+  const handleUpdateProject = async (projectId: number, updates: { title: string; code: string; description?: string; leaderId: number }) => {
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PUT',
@@ -140,7 +147,7 @@ export default function Home() {
                 </Tooltip>
               </TooltipProvider>
 
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Project</DialogTitle>
                 </DialogHeader>
@@ -156,23 +163,62 @@ export default function Home() {
                       required
                     />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="project-code">Project Code *</Label>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        id="project-code"
+                        value={newProjectCode}
+                        onChange={(e) => setNewProjectCode(e.target.value.toUpperCase())}
+                        placeholder="Enter code..."
+                        maxLength={10}
+                        pattern="[A-Z0-9]+"
+                        required
+                        className="w-32 font-mono"
+                      />
+                      <p className="text-sm text-red-600 dark:text-red-400 font-medium flex-1">
+                        ⚠️ Warning: Project code cannot be changed after creation!
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use ALL CAPS letters and numbers only (e.g., &quot;WEBAPP&quot;, &quot;API2024&quot;)
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <MarkdownEditor
+                      value={newProjectDescription}
+                      onChange={setNewProjectDescription}
+                      label="Description"
+                      placeholder="Enter project description and objectives..."
+                    />
+                  </div>
+                  
                   <UserSearch
                     value={newProjectLeaderId}
                     onValueChange={setNewProjectLeaderId}
                     placeholder="Select project leader..."
                     label="Project Leader *"
                   />
+                  
                   <div className="flex justify-end gap-2">
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setShowCreateDialog(false)}
+                      onClick={() => {
+                        setShowCreateDialog(false)
+                        setNewProjectTitle("")
+                        setNewProjectCode("")
+                        setNewProjectDescription("")
+                        setNewProjectLeaderId("")
+                      }}
                     >
                       Cancel
                     </Button>
                     <Button 
                       type="submit" 
-                      disabled={!newProjectTitle.trim() || !newProjectLeaderId}
+                      disabled={!newProjectTitle.trim() || !newProjectCode.trim() || !newProjectLeaderId}
                     >
                       Create Project
                     </Button>
@@ -205,7 +251,10 @@ export default function Home() {
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{project.title}</CardTitle>
+                      <div>
+                        <CardTitle className="text-lg">{project.title}</CardTitle>
+                        <p className="text-sm font-mono font-bold text-muted-foreground mt-1">[{project.code}]</p>
+                      </div>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>

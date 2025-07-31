@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, IMAGE_METADATA, IMAGE_DATA } from '@/lib/db'
+import { db, IMAGE_METADATA } from '@/lib/db'
 import { eq, and } from 'drizzle-orm'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; taskId: string; imageId: string } }
+  context: { params: Promise<{ id: string; taskId: string; imageId: string }> }
 ) {
   try {
-    const projectId = parseInt(params.id)
+    const params = await context.params
     const taskId = parseInt(params.taskId)
     const imageId = parseInt(params.imageId)
 

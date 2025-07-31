@@ -1,10 +1,22 @@
-import { dbService } from '../lib/db/service'
 import { db } from '../lib/db'
-import { PROJECTS } from '../lib/db/schema'
+import { dbService } from '../lib/db/service'
+import { PROJECTS, TASKS, USERS, TAGS, TASK_TAGS, IMAGE_METADATA, IMAGE_DATA } from '../lib/db/schema'
 
-async function seedAll() {
+async function resetAndSeed() {
   try {
-    console.log('🚀 Starting comprehensive data seeding...\n')
+    console.log('🗑️  Truncating all existing data...\n')
+
+    // Truncate all tables in reverse dependency order
+    await db.delete(IMAGE_DATA)
+    await db.delete(IMAGE_METADATA)
+    await db.delete(TASK_TAGS)
+    await db.delete(TASKS)
+    await db.delete(PROJECTS)
+    await db.delete(TAGS)
+    await db.delete(USERS)
+
+    console.log('✅ All existing data cleared!')
+    console.log('🚀 Starting fresh data seeding...\n')
 
     // Step 1: Seed Users
     console.log('📝 Step 1: Seeding users...')
@@ -21,7 +33,7 @@ async function seedAll() {
       console.log(`  ✅ Created user: ${createdUser.firstName} ${createdUser.lastName} (${createdUser.email})`)
     }
 
-    // Step 2: Seed Projects
+    // Step 2: Seed Projects with codes and descriptions
     console.log('\n📋 Step 2: Seeding projects...')
     const createdUsers = await dbService.getUsers()
     
@@ -29,31 +41,107 @@ async function seedAll() {
       { 
         title: 'Website Redesign',
         code: 'WEBSITE',
-        description: '# Website Redesign Project\n\n## Overview\nComplete overhaul of the company website to improve user experience and modernize the design.\n\n## Objectives\n- Improve user engagement and conversion rates\n- Implement responsive design for all devices\n- Optimize for search engines (SEO)\n- Enhance page load performance\n\n## Key Features\n- Modern, clean design\n- Mobile-first approach\n- Fast loading times\n- Accessibility compliance',
+        description: `# Website Redesign Project
+
+## Overview
+Complete overhaul of the company website to improve user experience and modernize the design.
+
+## Objectives
+- Improve user engagement and conversion rates
+- Implement responsive design for all devices
+- Optimize for search engines (SEO)
+- Enhance page load performance
+
+## Key Features
+- Modern, clean design
+- Mobile-first approach
+- Fast loading times
+- Accessibility compliance`,
         leaderId: createdUsers[0].id as number // John Doe
       },
       { 
         title: 'Mobile App Development',
         code: 'MOBILEAPP',
-        description: '# Mobile App Development\n\n## Overview\nDevelop a cross-platform mobile application using React Native to expand our digital presence.\n\n## Objectives\n- Create native mobile experience for iOS and Android\n- Integrate with existing API infrastructure\n- Provide offline functionality\n- Implement push notifications\n\n## Technology Stack\n- React Native\n- TypeScript\n- Redux for state management\n- Firebase for analytics',
+        description: `# Mobile App Development
+
+## Overview
+Develop a cross-platform mobile application using React Native to expand our digital presence.
+
+## Objectives
+- Create native mobile experience for iOS and Android
+- Integrate with existing API infrastructure
+- Provide offline functionality
+- Implement push notifications
+
+## Technology Stack
+- React Native
+- TypeScript
+- Redux for state management
+- Firebase for analytics`,
         leaderId: createdUsers[1].id as number // Jane Smith
       },
       { 
         title: 'Database Migration',
         code: 'DBMIGRATE',
-        description: '# Database Migration Project\n\n## Overview\nMigrate our current database infrastructure to a more scalable and performant solution.\n\n## Objectives\n- Improve database performance\n- Enhance data security\n- Implement better backup strategies\n- Reduce operational costs\n\n## Migration Plan\n1. **Backup**: Create comprehensive backups\n2. **Schema**: Update database schema\n3. **Data Transfer**: Migrate all existing data\n4. **Testing**: Verify data integrity\n5. **Cutover**: Switch to new database',
+        description: `# Database Migration Project
+
+## Overview
+Migrate our current database infrastructure to a more scalable and performant solution.
+
+## Objectives
+- Improve database performance
+- Enhance data security
+- Implement better backup strategies
+- Reduce operational costs
+
+## Migration Plan
+1. **Backup**: Create comprehensive backups
+2. **Schema**: Update database schema
+3. **Data Transfer**: Migrate all existing data
+4. **Testing**: Verify data integrity
+5. **Cutover**: Switch to new database`,
         leaderId: createdUsers[2].id as number // Bob Johnson
       },
       { 
         title: 'API Integration',
         code: 'APIINT',
-        description: '# API Integration Project\n\n## Overview\nIntegrate third-party services to enhance our platform capabilities.\n\n## Objectives\n- Implement payment processing\n- Add email marketing capabilities\n- Integrate analytics services\n- Enhance user authentication\n\n## Services to Integrate\n- **Payment**: Stripe for payment processing\n- **Email**: SendGrid for transactional emails\n- **Analytics**: Google Analytics for insights\n- **Auth**: OAuth providers for social login',
+        description: `# API Integration Project
+
+## Overview
+Integrate third-party services to enhance our platform capabilities.
+
+## Objectives
+- Implement payment processing
+- Add email marketing capabilities
+- Integrate analytics services
+- Enhance user authentication
+
+## Services to Integrate
+- **Payment**: Stripe for payment processing
+- **Email**: SendGrid for transactional emails
+- **Analytics**: Google Analytics for insights
+- **Auth**: OAuth providers for social login`,
         leaderId: createdUsers[3].id as number // Alice Williams
       },
       { 
         title: 'Security Audit',
         code: 'SECURITY',
-        description: '# Security Audit Project\n\n## Overview\nComprehensive security assessment of our entire technology stack.\n\n## Objectives\n- Identify security vulnerabilities\n- Implement security best practices\n- Ensure compliance with regulations\n- Protect user data and privacy\n\n## Audit Scope\n- **Application Security**: Code review and vulnerability testing\n- **Infrastructure**: Server and network security\n- **Data Protection**: Encryption and access controls\n- **Compliance**: GDPR, SOC2, and industry standards',
+        description: `# Security Audit Project
+
+## Overview
+Comprehensive security assessment of our entire technology stack.
+
+## Objectives
+- Identify security vulnerabilities
+- Implement security best practices
+- Ensure compliance with regulations
+- Protect user data and privacy
+
+## Audit Scope
+- **Application Security**: Code review and vulnerability testing
+- **Infrastructure**: Server and network security
+- **Data Protection**: Encryption and access controls
+- **Compliance**: GDPR, SOC2, and industry standards`,
         leaderId: createdUsers[4].id as number // Charlie Brown
       }
     ]
@@ -63,7 +151,7 @@ async function seedAll() {
       console.log(`  ✅ Created project: ${createdProject.title} [${createdProject.code}] (Leader ID: ${createdProject.leaderId})`)
     }
 
-    // Step 3: Get project IDs directly from database
+    // Step 3: Get project IDs and seed tasks
     console.log('\n🎯 Step 3: Seeding tasks...')
     const projectResults = await db.select({ id: PROJECTS.id, title: PROJECTS.title }).from(PROJECTS).orderBy(PROJECTS.id)
     
@@ -263,17 +351,21 @@ async function seedAll() {
       console.log(`  ✅ Created task: ${createdTask.title} (Project: ${projectTitle})`)
     }
 
-    console.log('\n🎉 All seeding completed successfully!')
+    console.log('\n🎉 Database reset and seeding completed successfully!')
     console.log('\n📊 Summary:')
     console.log(`  👥 Users: ${createdUsers.length}`)
     console.log(`  📋 Projects: ${projectResults.length}`)
     console.log(`  🎯 Tasks: ${tasks.length}`)
-    console.log('\n🚀 You can now access the application at http://localhost:3000')
+    console.log('\n🚀 Your application now has:')
+    console.log('  ✨ Project codes (immutable, ALL CAPS)')
+    console.log('  📝 Project descriptions (markdown support)')
+    console.log('  🔒 Code validation and warnings in UI')
+    console.log('\n💡 Access the application at http://localhost:3000')
 
   } catch (error) {
-    console.error('❌ Error during seeding:', error)
+    console.error('❌ Error during reset and seeding:', error)
     process.exit(1)
   }
 }
 
-seedAll() 
+resetAndSeed()

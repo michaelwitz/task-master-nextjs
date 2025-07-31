@@ -195,7 +195,7 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
           <Edit2 className="h-3 w-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[40vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[45vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>

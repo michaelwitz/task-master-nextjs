@@ -21,6 +21,8 @@ export const TAGS = pgTable('TAGS', {
 export const PROJECTS = pgTable('PROJECTS', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 255 }).notNull(),
+  code: varchar('code', { length: 10 }).notNull().unique(),
+  description: text('description'),
   leader_id: integer('leader_id').notNull().references(() => USERS.id, { onDelete: 'restrict' }),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

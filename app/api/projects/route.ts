@@ -13,13 +13,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, leaderId } = await request.json()
+    const { title, code, leaderId, description } = await request.json()
     
-    if (!title || !leaderId) {
+    if (!title || !code || !leaderId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const project = await dbService.createProject(title, leaderId)
+    const project = await dbService.createProject(title, code, leaderId, description)
     return NextResponse.json(project, { status: 201 })
   } catch (error) {
     console.error('Error creating project:', error)

@@ -29,17 +29,19 @@ export async function PUT(
     const { id } = await params.params
     const projectId = parseInt(id)
     const body = await request.json()
-    const { title, leaderId } = body
+    const { title, code, leaderId, description } = body
 
-    if (!title || !leaderId) {
+    if (!title || !code || !leaderId) {
       return NextResponse.json(
-        { error: "Title and leaderId are required" },
+        { error: "Title, code, and leaderId are required" },
         { status: 400 }
       )
     }
 
     const updatedProject = await dbService.updateProject(projectId, {
       title,
+      code: code.toUpperCase(),
+      description,
       leaderId: parseInt(leaderId)
     })
 

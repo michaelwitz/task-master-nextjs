@@ -80,6 +80,8 @@ export class DatabaseService {
       .select({
         id: PROJECTS.id,
         title: PROJECTS.title,
+        code: PROJECTS.code,
+        description: PROJECTS.description,
         leader_id: PROJECTS.leader_id,
         created_at: PROJECTS.created_at,
         updated_at: PROJECTS.updated_at,
@@ -103,11 +105,13 @@ export class DatabaseService {
     })
   }
 
-  async createProject(title: string, leaderId: number) {
+  async createProject(title: string, code: string, leaderId: number, description?: string) {
     const [project] = await db
       .insert(PROJECTS)
       .values({
         title: title.trim(),
+        code: code.trim().toUpperCase(),
+        description: description?.trim() || null,
         leader_id: leaderId,
       })
       .returning()
@@ -119,6 +123,8 @@ export class DatabaseService {
       .select({
         id: PROJECTS.id,
         title: PROJECTS.title,
+        code: PROJECTS.code,
+        description: PROJECTS.description,
         leader_id: PROJECTS.leader_id,
         created_at: PROJECTS.created_at,
         updated_at: PROJECTS.updated_at,
@@ -144,7 +150,7 @@ export class DatabaseService {
     }
   }
 
-  async updateProject(id: number, updates: { title?: string; leaderId?: number }) {
+  async updateProject(id: number, updates: { title?: string; code?: string; description?: string; leaderId?: number }) {
     // Convert camelCase updates to snake_case for database
     const dbUpdates = mapJsToDb(updates)
     
@@ -161,6 +167,8 @@ export class DatabaseService {
       .select({
         id: PROJECTS.id,
         title: PROJECTS.title,
+        code: PROJECTS.code,
+        description: PROJECTS.description,
         leader_id: PROJECTS.leader_id,
         created_at: PROJECTS.created_at,
         updated_at: PROJECTS.updated_at,

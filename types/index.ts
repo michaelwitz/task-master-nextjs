@@ -13,6 +13,8 @@ export interface User {
 export interface Project {
   id: number
   title: string
+  code: string
+  description?: string
   leaderId: number
   leader?: string // For display purposes
   createdAt: Date
