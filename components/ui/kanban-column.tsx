@@ -29,7 +29,7 @@ export function KanbanColumn({
 
   return (
     <Card
-      className={`h-screen w-80 flex flex-col ${
+      className={`h-screen flex-1 flex flex-col ${
         isOver ? "ring-2 ring-primary/50" : ""
       }`}
     >
@@ -47,7 +47,7 @@ export function KanbanColumn({
             <div className="space-y-2">
               {tasks.map((task) => (
                 <TaskCard
-                  key={task.id}
+                  key={`${task.id}-${task.isBlocked}-${task.updatedAt}`}
                   task={task}
                   projectId={projectId}
                   onUpdate={onUpdateTask}

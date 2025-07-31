@@ -10,15 +10,17 @@ import { MarkdownEditor } from "@/components/ui/markdown-editor"
 import { ImageThumbnail } from "@/components/ui/image-thumbnail"
 import { ImageUploadDialog } from "@/components/ui/image-upload-dialog"
 import { useTaskImages } from "@/hooks/use-task-images"
-import { Edit2 } from "lucide-react"
+import { Edit2, Trash2 } from "lucide-react"
 import { Task, Priority } from "@/types"
 import { STORY_POINTS, PRIORITIES } from "@/lib/utils/constants"
 import { UserSearch } from "@/components/ui/user-search"
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 
 interface EditTaskDialogProps {
   task: Task
   projectId: number
   onUpdate: (id: string, updates: Partial<Task>) => void
+  onDelete: (id: string | number) => void
   onOpenChange?: (open: boolean) => void
 }
 
@@ -32,7 +34,7 @@ interface StagedImage {
   fileSize: number
 }
 
-export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: EditTaskDialogProps) {
+export function EditTaskDialog({ task, projectId, onUpdate, onDelete, onOpenChange }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
   const [prompt, setPrompt] = useState(task.prompt || "")
   const [isBlocked, setIsBlocked] = useState(task.isBlocked || false)
@@ -41,6 +43,7 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
   const [stagedImages, setStagedImages] = useState<StagedImage[]>([])
   const [stagedForDeletion, setStagedForDeletion] = useState<Set<number>>(new Set())
   const [isUploading, setIsUploading] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   
   // Fetch task images
   const { images, isLoading: imagesLoading, refetch } = useTaskImages(projectId, typeof task.id === 'string' ? parseInt(task.id) : task.id)
@@ -188,6 +191,16 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
     onOpenChange?.(newOpen)
   }
 
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = () => {
+    onDelete(task.id)
+    setShowDeleteDialog(false)
+    setOpen(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -197,7 +210,11 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
       </DialogTrigger>
       <DialogContent className="sm:max-w-[45vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
+          <div className="flex justify-center">
+            <DialogTitle className="text-lg font-medium text-blue-600 dark:text-blue-400">
+              {task.taskId}
+            </DialogTitle>
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pb-4">
           <div className="space-y-2">
@@ -406,20 +423,57 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
+          {/* Timestamp Information */}
+          <div className="border-t pt-4 mt-6">
+            <div className="text-xs text-muted-foreground space-y-1">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                  <span className="font-medium">Started:</span>{" "}
+                  {task.startedAt ? new Date(task.startedAt).toLocaleString() : "Not started"}
+                </div>
+                <div>
+                  <span className="font-medium">Modified:</span>{" "}
+                  {task.updatedAt ? new Date(task.updatedAt).toLocaleString() : "Never"}
+                </div>
+                <div>
+                  <span className="font-medium">Completed:</span>{" "}
+                  {task.completedAt ? new Date(task.completedAt).toLocaleString() : "Not completed"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
+              variant="destructive"
+              onClick={handleDeleteClick}
+              className="flex items-center gap-2"
             >
-              Cancel
+              <Trash2 className="h-4 w-4" />
+              Delete
             </Button>
-            <Button type="submit" disabled={isUploading}>
-              {isUploading ? "Saving Changes..." : "Save Changes"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isUploading}>
+                {isUploading ? "Saving Changes..." : "Save Changes"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title={task.title}
+      />
     </Dialog>
   )
-} 
+}

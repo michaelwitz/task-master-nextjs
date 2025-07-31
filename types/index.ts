@@ -23,6 +23,7 @@ export interface Project {
 
 export interface Task {
   id: number
+  taskId: string // Human-readable task identifier (e.g., "WEBSITE-1")
   projectId: number
   title: string
   status: TaskStatus
@@ -35,6 +36,7 @@ export interface Task {
   prompt?: string // Markdown content for detailed task instructions and AI prompts
   isBlocked?: boolean
   blockedReason?: string
+  startedAt?: Date
   completedAt?: Date
   createdAt: Date
   updatedAt: Date

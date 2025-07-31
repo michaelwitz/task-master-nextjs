@@ -21,8 +21,29 @@ async function seedAll() {
       console.log(`  ✅ Created user: ${createdUser.firstName} ${createdUser.lastName} (${createdUser.email})`)
     }
 
-    // Step 2: Seed Projects
-    console.log('\n📋 Step 2: Seeding projects...')
+    // Step 2: Seed Tags first (since they're primary keys)
+    console.log('\n🏷️  Step 2: Seeding tags...')
+    const allTags = [
+      'design', 'frontend', 'ux', 'css', 'responsive', 'performance', 'optimization',
+      'documentation', 'mobile', 'react-native', 'setup', 'navigation', 'ui',
+      'api', 'integration', 'backend', 'testing', 'ios', 'qa', 'database',
+      'backup', 'migration', 'sql', 'staging', 'research', 'payment', 'stripe',
+      'security', 'email', 'sendgrid', 'marketing', 'audit', 'vulnerability',
+      'policies', 'compliance', 'patches', 'fixes'
+    ]
+
+    for (const tag of allTags) {
+      try {
+        await dbService.createTag(tag)
+        console.log(`  ✅ Created tag: ${tag}`)
+      } catch (error) {
+        // Tag might already exist, skip
+        console.log(`  ⚠️  Tag already exists: ${tag}`)
+      }
+    }
+
+    // Step 3: Seed Projects
+    console.log('\n📋 Step 3: Seeding projects...')
     const createdUsers = await dbService.getUsers()
     
     const projects = [
@@ -139,8 +160,8 @@ Comprehensive security assessment of our entire technology stack.
       console.log(`  ✅ Created project: ${createdProject.title} [${createdProject.code}] (Leader ID: ${createdProject.leaderId})`)
     }
 
-    // Step 3: Get project IDs directly from database
-    console.log('\n🎯 Step 3: Seeding tasks...')
+    // Step 4: Get project IDs directly from database
+    console.log('\n🎯 Step 4: Seeding tasks...')
     const projectResults = await db.select({ id: PROJECTS.id, title: PROJECTS.title }).from(PROJECTS).orderBy(PROJECTS.id)
     
     const tasks = [

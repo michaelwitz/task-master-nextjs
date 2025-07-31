@@ -5,9 +5,8 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { X, Flame, TrendingUp } from "lucide-react"
+import { Flame, TrendingUp } from "lucide-react"
 import { Task, Priority } from "@/types"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 import { EditTaskDialog } from "@/components/ui/edit-task-dialog"
 import { PRIORITY_COLORS } from "@/lib/utils/constants"
 
@@ -30,7 +29,6 @@ const getPriorityIcon = (priority: Priority) => {
 }
 
 export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const {
@@ -48,26 +46,25 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const handleDeleteClick = () => {
-    setShowDeleteDialog(true)
-  }
-
-  const handleConfirmDelete = () => {
-    onDelete(task.id)
-    setShowDeleteDialog(false)
-  }
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
-                    className={`mb-3 cursor-grab active:cursor-grabbing relative ${
+                    className={`mb-3 cursor-grab active:cursor-grabbing relative py-0 ${
                 isDragging ? "shadow-lg" : ""
               } ${task.isBlocked ? "ring-2 ring-yellow-400" : ""}`}
       {...attributes}
       {...listeners}
     >
-      <CardContent className="p-3 pt-2">
+      <CardContent className="px-3 pb-3 pt-1">
+        {/* Task ID */}
+        <div className="text-center mt-0 mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+          <span className="text-xs font-mono text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+            {task.taskId}
+          </span>
+        </div>
+        
         {/* Title Section */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div
@@ -85,16 +82,9 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
               task={task} 
               projectId={projectId}
               onUpdate={onUpdate} 
+              onDelete={onDelete}
               onOpenChange={setIsEditDialogOpen}
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-              onClick={handleDeleteClick}
-            >
-              <X className="h-3 w-3" />
-            </Button>
           </div>
         </div>
 
@@ -148,6 +138,11 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
           {/* Dates */}
           <div className="text-xs text-muted-foreground pt-1 border-t space-y-1">
             <div>Created: {new Date(task.createdAt).toLocaleDateString()}</div>
+            {task.startedAt && (
+              <div className="text-blue-600 dark:text-blue-400 font-medium">
+                Started: {new Date(task.startedAt).toLocaleDateString()}
+              </div>
+            )}
             {task.completedAt && (
               <div className="text-green-600 dark:text-green-400 font-medium">
                 Completed: {new Date(task.completedAt).toLocaleDateString()}
@@ -156,12 +151,6 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
           </div>
         </div>
       </CardContent>
-      <DeleteConfirmationDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleConfirmDelete}
-        title={task.title}
-      />
     </Card>
   )
 } 

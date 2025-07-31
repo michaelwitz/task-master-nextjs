@@ -24,6 +24,7 @@ export const PROJECTS = pgTable('PROJECTS', {
   code: varchar('code', { length: 10 }).notNull().unique(),
   description: text('description'),
   leader_id: integer('leader_id').notNull().references(() => USERS.id, { onDelete: 'restrict' }),
+  next_task_sequence: integer('next_task_sequence').notNull().default(1),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
@@ -32,6 +33,7 @@ export const PROJECTS = pgTable('PROJECTS', {
 export const TASKS = pgTable('TASKS', {
   id: serial('id').primaryKey(),
   project_id: integer('project_id').notNull().references(() => PROJECTS.id, { onDelete: 'cascade' }),
+  task_id: varchar('task_id', { length: 50 }).notNull().unique(),
   title: varchar('title', { length: 255 }).notNull(),
   status: varchar('status', { length: 20 }).notNull().default('todo'), // 'todo', 'in-progress', 'in-review', 'done'
   position: integer('position').notNull().default(0), // Position within the column for ordering
@@ -41,6 +43,7 @@ export const TASKS = pgTable('TASKS', {
   prompt: text('prompt'),
   is_blocked: boolean('is_blocked').default(false),
   blocked_reason: text('blocked_reason'),
+  started_at: timestamp('started_at', { withTimezone: true }),
   completed_at: timestamp('completed_at', { withTimezone: true }),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

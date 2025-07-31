@@ -203,6 +203,7 @@ export class DatabaseService {
     const tasks = await db
       .select({
         id: TASKS.id,
+        task_id: TASKS.task_id,
         project_id: TASKS.project_id,
         title: TASKS.title,
         status: TASKS.status,
@@ -213,6 +214,7 @@ export class DatabaseService {
         prompt: TASKS.prompt,
         is_blocked: TASKS.is_blocked,
         blocked_reason: TASKS.blocked_reason,
+        started_at: TASKS.started_at,
         completed_at: TASKS.completed_at,
         created_at: TASKS.created_at,
         updated_at: TASKS.updated_at,
@@ -276,70 +278,112 @@ export class DatabaseService {
     blockedReason?: string
     status?: string
   }) {
-    // Get the next position for this status using increments of 10
-    const maxPositionResult = await db
-      .select({ maxPosition: sql<number>`COALESCE(MAX(position), 0)` })
-      .from(TASKS)
-      .where(and(
-        eq(TASKS.project_id, projectId),
-        eq(TASKS.status, taskData.status || 'todo')
-      ))
-    
-    const nextPosition = maxPositionResult[0]?.maxPosition + 10
+    // Create the task first
+    const task = await db.transaction(async (tx) => {
+      // Get project to generate task_id
+      const [project] = await tx
+        .select()
+        .from(PROJECTS)
+        .where(eq(PROJECTS.id, projectId))
 
-    // Create the task
-    const [task] = await db
-      .insert(TASKS)
-      .values({
-        project_id: projectId,
-        title: taskData.title,
-        status: taskData.status || 'todo',
-        position: nextPosition,
-        story_points: taskData.storyPoints,
-        priority: taskData.priority,
-        assignee_id: taskData.assigneeId,
-        prompt: taskData.prompt,
-        is_blocked: taskData.isBlocked || false,
-        blocked_reason: taskData.blockedReason,
-      })
-      .returning()
+      if (!project) {
+        throw new Error('Project not found')
+      }
 
-    // Create tags if they don't exist and link them to the task
-    if (taskData.tags.length > 0) {
-      await Promise.all(
-        taskData.tags.map(async (tag) => {
-          // Try to create the tag (will fail silently if it exists)
-          try {
-            await db.insert(TAGS).values({ tag: tag.toLowerCase() })
-          } catch (error) {
-            // Tag already exists, continue
-          }
+      // Generate task_id
+      const taskId = `${project.code}-${project.next_task_sequence}`
 
-          // Link tag to task
-          await db.insert(TASK_TAGS).values({
-            task_id: task.id,
-            tag: tag.toLowerCase(),
-          })
+      // Increment next_task_sequence
+      await tx
+        .update(PROJECTS)
+        .set({ next_task_sequence: project.next_task_sequence + 1 })
+        .where(eq(PROJECTS.id, projectId))
+      
+      // Get the next position for this status using increments of 10
+      const maxPositionResult = await tx
+        .select({ maxPosition: sql<number>`COALESCE(MAX(position), 0)` })
+        .from(TASKS)
+        .where(and(
+          eq(TASKS.project_id, projectId),
+          eq(TASKS.status, taskData.status || 'todo')
+        ))
+      
+      const nextPosition = maxPositionResult[0]?.maxPosition + 10
+
+      // Create the task
+      const [newTask] = await tx
+        .insert(TASKS)
+        .values({
+          project_id: projectId,
+          task_id: taskId,
+          title: taskData.title,
+          status: taskData.status || 'todo',
+          position: nextPosition,
+          story_points: taskData.storyPoints,
+          priority: taskData.priority,
+          assignee_id: taskData.assigneeId,
+          prompt: taskData.prompt,
+          is_blocked: taskData.isBlocked || false,
+          blocked_reason: taskData.blockedReason,
         })
-      )
+        .returning()
+
+      return newTask
+    })
+
+    // Handle tags outside the transaction - create tags if they don't exist
+    if (taskData.tags.length > 0) {
+      for (const tag of taskData.tags) {
+        const normalizedTag = tag.toLowerCase()
+        
+        // Try to create the tag (will fail silently if it exists)
+        try {
+          await db.insert(TAGS).values({ tag: normalizedTag })
+        } catch (error) {
+          // Tag already exists, continue
+        }
+        
+        // Link tag to task
+        await db.insert(TASK_TAGS).values({
+          task_id: task.id,
+          tag: normalizedTag,
+        })
+      }
     }
 
     return mapDbToJs(task)
   }
 
   async updateTask(projectId: number, taskId: number, updates: Partial<Task>) {
+    // Get current task to check status change
+    const [currentTask] = await db
+      .select({ status: TASKS.status, started_at: TASKS.started_at })
+      .from(TASKS)
+      .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+    
+    if (!currentTask) {
+      throw new Error('Task not found')
+    }
+
     // Build update object directly to ensure proper types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {}
     
     if (updates.title !== undefined) updateData.title = updates.title
-    if (updates.status !== undefined) updateData.status = updates.status
+    if (updates.status !== undefined) {
+      updateData.status = updates.status
+      // Set started_at when task moves to 'in-progress' for the first time
+      if (updates.status === 'in-progress' && currentTask.status !== 'in-progress' && !currentTask.started_at) {
+        updateData.started_at = new Date()
+      }
+    }
     if (updates.storyPoints !== undefined) updateData.story_points = updates.storyPoints
     if (updates.priority !== undefined) updateData.priority = updates.priority
     if (updates.prompt !== undefined) updateData.prompt = updates.prompt
     if (updates.isBlocked !== undefined) updateData.is_blocked = updates.isBlocked
     if (updates.blockedReason !== undefined) updateData.blocked_reason = updates.blockedReason
     if (updates.completedAt !== undefined) updateData.completed_at = updates.completedAt
+    if (updates.startedAt !== undefined) updateData.started_at = updates.startedAt
     if (updates.assigneeId !== undefined) updateData.assignee_id = updates.assigneeId
     
     updateData.updated_at = new Date()
@@ -377,7 +421,53 @@ export class DatabaseService {
       }
     }
 
-    return mapDbToJs(task)
+    // Fetch the updated task with tags and assignee info
+    const [updatedTaskWithDetails] = await db
+      .select({
+        id: TASKS.id,
+        task_id: TASKS.task_id,
+        project_id: TASKS.project_id,
+        title: TASKS.title,
+        status: TASKS.status,
+        position: TASKS.position,
+        story_points: TASKS.story_points,
+        priority: TASKS.priority,
+        assignee_id: TASKS.assignee_id,
+        prompt: TASKS.prompt,
+        is_blocked: TASKS.is_blocked,
+        blocked_reason: TASKS.blocked_reason,
+        started_at: TASKS.started_at,
+        completed_at: TASKS.completed_at,
+        created_at: TASKS.created_at,
+        updated_at: TASKS.updated_at,
+        assignee: {
+          id: USERS.id,
+          first_name: USERS.first_name,
+          last_name: USERS.last_name,
+          email: USERS.email,
+        },
+      })
+      .from(TASKS)
+      .leftJoin(USERS, eq(TASKS.assignee_id, USERS.id))
+      .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
+
+    if (!updatedTaskWithDetails) {
+      throw new Error('Task not found after update')
+    }
+
+    // Get tags for the task
+    const taskTags = await db
+      .select({ tag: TAGS.tag })
+      .from(TASK_TAGS)
+      .innerJoin(TAGS, eq(TASK_TAGS.tag, TAGS.tag))
+      .where(eq(TASK_TAGS.task_id, taskId))
+
+    const mappedTask = mapDbToJs(updatedTaskWithDetails)
+    return {
+      ...mappedTask,
+      tags: taskTags.map(tt => tt.tag),
+      assignee: updatedTaskWithDetails.assignee ? `${updatedTaskWithDetails.assignee.first_name} ${updatedTaskWithDetails.assignee.last_name}` : undefined,
+    }
   }
 
   async deleteTask(projectId: number, taskId: number) {
@@ -390,6 +480,7 @@ export class DatabaseService {
     const tasks = await db
       .select({
         id: TASKS.id,
+        task_id: TASKS.task_id,
         project_id: TASKS.project_id,
         title: TASKS.title,
         status: TASKS.status,
@@ -399,6 +490,7 @@ export class DatabaseService {
         prompt: TASKS.prompt,
         is_blocked: TASKS.is_blocked,
         blocked_reason: TASKS.blocked_reason,
+        started_at: TASKS.started_at,
         completed_at: TASKS.completed_at,
         created_at: TASKS.created_at,
         updated_at: TASKS.updated_at,
@@ -497,14 +589,22 @@ export class DatabaseService {
         }
       }
 
+      // Build update object
+      const updateData: any = {
+        status: newStatus, 
+        position: newPosition,
+        updated_at: new Date()
+      }
+      
+      // Set started_at when task moves to 'in-progress' for the first time
+      if (newStatus === 'in-progress' && oldStatus !== 'in-progress' && !currentTask.started_at) {
+        updateData.started_at = new Date()
+      }
+
       // Update the moved task
       await db
         .update(TASKS)
-        .set({ 
-          status: newStatus, 
-          position: newPosition,
-          updated_at: new Date()
-        })
+        .set(updateData)
         .where(and(eq(TASKS.id, taskId), eq(TASKS.project_id, projectId)))
 
       // Reorder the old status column if it's different
