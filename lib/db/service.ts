@@ -210,7 +210,7 @@ export class DatabaseService {
         story_points: TASKS.story_points,
         priority: TASKS.priority,
         assignee_id: TASKS.assignee_id,
-        description: TASKS.description,
+        prompt: TASKS.prompt,
         is_blocked: TASKS.is_blocked,
         blocked_reason: TASKS.blocked_reason,
         completed_at: TASKS.completed_at,
@@ -271,7 +271,7 @@ export class DatabaseService {
     priority: Priority
     assigneeId?: number
     tags: string[]
-    description?: string
+    prompt?: string
     isBlocked?: boolean
     blockedReason?: string
     status?: string
@@ -298,7 +298,7 @@ export class DatabaseService {
         story_points: taskData.storyPoints,
         priority: taskData.priority,
         assignee_id: taskData.assigneeId,
-        description: taskData.description,
+        prompt: taskData.prompt,
         is_blocked: taskData.isBlocked || false,
         blocked_reason: taskData.blockedReason,
       })
@@ -336,7 +336,7 @@ export class DatabaseService {
     if (updates.status !== undefined) updateData.status = updates.status
     if (updates.storyPoints !== undefined) updateData.story_points = updates.storyPoints
     if (updates.priority !== undefined) updateData.priority = updates.priority
-    if (updates.description !== undefined) updateData.description = updates.description
+    if (updates.prompt !== undefined) updateData.prompt = updates.prompt
     if (updates.isBlocked !== undefined) updateData.is_blocked = updates.isBlocked
     if (updates.blockedReason !== undefined) updateData.blocked_reason = updates.blockedReason
     if (updates.completedAt !== undefined) updateData.completed_at = updates.completedAt
@@ -396,7 +396,7 @@ export class DatabaseService {
         story_points: TASKS.story_points,
         priority: TASKS.priority,
         assignee_id: TASKS.assignee_id,
-        description: TASKS.description,
+        prompt: TASKS.prompt,
         is_blocked: TASKS.is_blocked,
         blocked_reason: TASKS.blocked_reason,
         completed_at: TASKS.completed_at,

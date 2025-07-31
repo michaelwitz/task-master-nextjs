@@ -32,7 +32,7 @@ export interface Task {
   assigneeId?: number
   assignee?: string // For display purposes
   tags: string[]
-  description?: string // Markdown content for detailed task instructions
+  prompt?: string // Markdown content for detailed task instructions and AI prompts
   isBlocked?: boolean
   blockedReason?: string
   completedAt?: Date

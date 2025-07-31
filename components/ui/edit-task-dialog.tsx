@@ -34,7 +34,7 @@ interface StagedImage {
 
 export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
-  const [description, setDescription] = useState(task.description || "")
+  const [prompt, setPrompt] = useState(task.prompt || "")
   const [isBlocked, setIsBlocked] = useState(task.isBlocked || false)
   const [blockedReason, setBlockedReason] = useState(task.blockedReason || "")
   const [assigneeId, setAssigneeId] = useState(task.assigneeId?.toString() || "")
@@ -141,7 +141,7 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
           priority,
           assigneeId: assigneeId ? parseInt(assigneeId) : undefined,
           tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-          description: description.trim() || undefined,
+          prompt: prompt.trim() || undefined,
           isBlocked: isBlocked,
           blockedReason: blockedReason.trim() || undefined,
           updatedAt: new Date(),
@@ -297,10 +297,10 @@ export function EditTaskDialog({ task, projectId, onUpdate, onOpenChange }: Edit
 
           <div className="space-y-2">
             <MarkdownEditor
-              value={description}
-              onChange={setDescription}
-              label="Description"
-              placeholder="Enter detailed task description with markdown formatting..."
+              value={prompt}
+              onChange={setPrompt}
+              label="Prompt"
+              placeholder="Enter detailed task prompt for AI agents and developers..."
             />
           </div>
 

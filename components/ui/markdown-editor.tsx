@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import MDEditor from "@uiw/react-md-editor"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Bold, Italic, Code, List, Heading1, Heading2, Link, Quote, Strikethrough } from "lucide-react"
+import { Bold, Italic, Code, ListOrdered, CheckSquare, Table, Heading1, Heading2, Link, Strikethrough } from "lucide-react"
 
 interface MarkdownEditorProps {
   value: string
@@ -24,7 +24,7 @@ export function MarkdownEditor({
   const [isPreview, setIsPreview] = useState(false)
   const editorRef = useRef<HTMLDivElement>(null)
 
-  const insertMarkdown = (prefix: string, suffix: string = "", placeholder: string = "text") => {
+const insertMarkdown = (prefix: string, suffix: string = "", placeholder: string = "text") => {
     // Get the textarea from the MDEditor component
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const textarea = (editorRef.current as any)?.textarea || 
@@ -42,10 +42,16 @@ export function MarkdownEditor({
       // Set cursor position after insertion
       setTimeout(() => {
         textarea.focus()
-        textarea.setSelectionRange(
-          start + prefix.length,
-          start + prefix.length + replacement.length
-        )
+        if (prefix.includes('|')) {
+          // For tables, position cursor at first cell
+          const headerEnd = newValue.indexOf('|', start + prefix.indexOf('|') + 1)
+          textarea.setSelectionRange(headerEnd - 8, headerEnd - 1)
+        } else {
+          textarea.setSelectionRange(
+            start + prefix.length,
+            start + prefix.length + replacement.length
+          )
+        }
       }, 0)
     }
   }
@@ -54,97 +60,40 @@ export function MarkdownEditor({
     <div className={`space-y-2 ${className}`}>
       {label && <Label>{label}</Label>}
       
-      {/* Markdown Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border rounded-md bg-muted/50">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("**", "**", "bold text")}
-          title="Bold"
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("*", "*", "italic text")}
-          title="Italic"
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("~~", "~~", "strikethrough text")}
-          title="Strikethrough"
-        >
-          <Strikethrough className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("`", "`", "code")}
-          title="Inline Code"
-        >
-          <Code className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("# ", "", "Heading 1")}
-          title="Heading 1"
-        >
+{/* Markdown Toolbar */}
+      <div className="flex gap-1 p-2 border rounded-md bg-muted/50">
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("# ", "", "Heading 1")} title="Heading 1">
           <Heading1 className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("## ", "", "Heading 2")}
-          title="Heading 2"
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("## ", "", "Heading 2")} title="Heading 2">
           <Heading2 className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("- ", "", "list item")}
-          title="Unordered List"
-        >
-          <List className="h-4 w-4" />
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("**", "**", "bold text")} title="Bold">
+          <Bold className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("> ", "", "quote")}
-          title="Quote"
-        >
-          <Quote className="h-4 w-4" />
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("*", "*", "italic text")} title="Italic">
+          <Italic className="h-4 w-4" />
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => insertMarkdown("[", "](url)", "link text")}
-          title="Link"
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("~~", "~~", "strikethrough text")} title="Strikethrough">
+          <Strikethrough className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("`", "`", "code")} title="Inline Code">
+          <Code className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("1. ", "", "numbered item")} title="Numbered List">
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("- [ ] ", "", "task item")} title="Task List">
+          <CheckSquare className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1   | Cell 2   |\n", "", "")} title="Table">
+          <Table className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("[", "](url)", "link text")} title="Link">
           <Link className="h-4 w-4" />
         </Button>
-        
         <div className="ml-auto">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPreview(!isPreview)}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => setIsPreview(!isPreview)}>
             {isPreview ? "Edit" : "Preview"}
           </Button>
         </div>
@@ -159,6 +108,8 @@ export function MarkdownEditor({
           preview={isPreview ? "preview" : "edit"}
           height={400}
           className="min-h-[400px]"
+          hideToolbar
+          visibleDragbar={false}
           style={{ height: 'auto', minHeight: '400px' }}
         />
       </div>

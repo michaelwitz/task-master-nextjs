@@ -30,7 +30,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 8,
-        description: 'Create wireframes and mockups for the new homepage design. Focus on user experience and modern design principles.',
+        prompt: 'Create wireframes and mockups for the new homepage design. Focus on user experience and modern design principles.',
         tags: ['design', 'frontend', 'ux']
       },
       {
@@ -40,7 +40,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[0].id as number, // John Doe
         storyPoints: 13,
-        description: 'Build the responsive layout using CSS Grid and Flexbox. Ensure compatibility across all devices.',
+        prompt: 'Build the responsive layout using CSS Grid and Flexbox. Ensure compatibility across all devices.',
         tags: ['frontend', 'css', 'responsive']
       },
       {
@@ -50,7 +50,7 @@ async function seedTasks() {
         priority: 'Medium',
         assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 5,
-        description: 'Compress and optimize all images for web. Implement lazy loading for better performance.',
+        prompt: 'Compress and optimize all images for web. Implement lazy loading for better performance.',
         tags: ['performance', 'optimization']
       },
       {
@@ -60,7 +60,7 @@ async function seedTasks() {
         priority: 'Low',
         assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 3,
-        description: 'Create comprehensive documentation for the new website design and implementation.',
+        prompt: 'Create comprehensive documentation for the new website design and implementation.',
         tags: ['documentation']
       },
 
@@ -72,7 +72,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 5,
-        description: 'Initialize React Native project with TypeScript and configure development environment.',
+        prompt: 'Initialize React Native project with TypeScript and configure development environment.',
         tags: ['mobile', 'react-native', 'setup']
       },
       {
@@ -82,7 +82,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[0].id as number, // John Doe
         storyPoints: 8,
-        description: 'Implement bottom tab navigation and stack navigation for different app screens.',
+        prompt: 'Implement bottom tab navigation and stack navigation for different app screens.',
         tags: ['mobile', 'navigation', 'ui']
       },
       {
@@ -92,7 +92,7 @@ async function seedTasks() {
         priority: 'Medium',
         assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 13,
-        description: 'Connect the mobile app to backend API endpoints for data fetching and user authentication.',
+        prompt: 'Connect the mobile app to backend API endpoints for data fetching and user authentication.',
         tags: ['api', 'integration', 'backend']
       },
       {
@@ -102,7 +102,7 @@ async function seedTasks() {
         priority: 'Medium',
         assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 5,
-        description: 'Run comprehensive tests on iOS simulator to ensure app functionality and UI consistency.',
+        prompt: 'Run comprehensive tests on iOS simulator to ensure app functionality and UI consistency.',
         tags: ['testing', 'ios', 'qa']
       },
 
@@ -114,7 +114,7 @@ async function seedTasks() {
         priority: 'Critical',
         assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 3,
-        description: 'Create full backup of current database before migration. Verify backup integrity.',
+        prompt: 'Create full backup of current database before migration. Verify backup integrity.',
         tags: ['database', 'backup', 'migration']
       },
       {
@@ -124,7 +124,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 21,
-        description: 'Write SQL migration scripts to transform current schema to new structure. Include rollback procedures.',
+        prompt: 'Write SQL migration scripts to transform current schema to new structure. Include rollback procedures.',
         tags: ['database', 'migration', 'sql']
       },
       {
@@ -134,7 +134,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 8,
-        description: 'Test migration process on staging environment. Verify data integrity and performance.',
+        prompt: 'Test migration process on staging environment. Verify data integrity and performance.',
         tags: ['testing', 'migration', 'staging']
       },
 
@@ -146,7 +146,7 @@ async function seedTasks() {
         priority: 'Medium',
         assigneeId: users[3].id as number, // Alice Williams
         storyPoints: 5,
-        description: 'Research and evaluate third-party APIs for payment processing and email services.',
+        prompt: 'Research and evaluate third-party APIs for payment processing and email services.',
         tags: ['research', 'api', 'integration']
       },
       {
@@ -156,7 +156,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[0].id as number, // John Doe
         storyPoints: 13,
-        description: 'Integrate Stripe payment gateway for processing online payments securely.',
+        prompt: 'Integrate Stripe payment gateway for processing online payments securely.',
         tags: ['payment', 'stripe', 'security']
       },
       {
@@ -166,7 +166,7 @@ async function seedTasks() {
         priority: 'Medium',
         assigneeId: users[1].id as number, // Jane Smith
         storyPoints: 8,
-        description: 'Configure SendGrid for transactional emails and marketing campaigns.',
+        prompt: 'Configure SendGrid for transactional emails and marketing campaigns.',
         tags: ['email', 'sendgrid', 'marketing']
       },
 
@@ -178,7 +178,7 @@ async function seedTasks() {
         priority: 'Critical',
         assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 21,
-        description: 'Conduct comprehensive security audit of all systems and identify potential vulnerabilities.',
+        prompt: 'Conduct comprehensive security audit of all systems and identify potential vulnerabilities.',
         tags: ['security', 'audit', 'vulnerability']
       },
       {
@@ -188,7 +188,7 @@ async function seedTasks() {
         priority: 'High',
         assigneeId: users[4].id as number, // Charlie Brown
         storyPoints: 8,
-        description: 'Review and update security policies and procedures based on audit findings.',
+        prompt: 'Review and update security policies and procedures based on audit findings.',
         tags: ['security', 'policies', 'compliance']
       },
       {
@@ -198,7 +198,7 @@ async function seedTasks() {
         priority: 'Critical',
         assigneeId: users[2].id as number, // Bob Johnson
         storyPoints: 13,
-        description: 'Implement security patches and fixes for identified vulnerabilities.',
+        prompt: 'Implement security patches and fixes for identified vulnerabilities.',
         tags: ['security', 'patches', 'fixes']
       }
     ]
@@ -210,7 +210,7 @@ async function seedTasks() {
         priority: task.priority as Priority,
         assigneeId: task.assigneeId,
         storyPoints: task.storyPoints,
-        description: task.description,
+        prompt: task.prompt,
         tags: task.tags
       })
       console.log(`Created task: ${createdTask.title} (Project: ${projects.find(p => p.id === task.projectId)?.title})`)

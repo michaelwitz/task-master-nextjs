@@ -38,7 +38,7 @@ export const TASKS = pgTable('TASKS', {
   story_points: integer('story_points'),
   priority: varchar('priority', { length: 20 }).notNull().default('Medium'), // 'Low', 'Medium', 'High', 'Critical'
   assignee_id: integer('assignee_id').references(() => USERS.id, { onDelete: 'set null' }),
-  description: text('description'),
+  prompt: text('prompt'),
   is_blocked: boolean('is_blocked').default(false),
   blocked_reason: text('blocked_reason'),
   completed_at: timestamp('completed_at', { withTimezone: true }),
