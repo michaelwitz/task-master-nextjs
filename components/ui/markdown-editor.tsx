@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import MDEditor from "@uiw/react-md-editor"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Bold, Italic, Code, ListOrdered, CheckSquare, Table, Heading1, Heading2, Link, Strikethrough } from "lucide-react"
+import { Bold, Italic, Code, List, ListOrdered, CheckSquare, Table, Heading1, Heading2, Link, Strikethrough } from "lucide-react"
 
 interface MarkdownEditorProps {
   value: string
@@ -82,6 +82,9 @@ const insertMarkdown = (prefix: string, suffix: string = "", placeholder: string
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("1. ", "", "numbered item")} title="Numbered List">
           <ListOrdered className="h-4 w-4" />
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("- ", "", "bullet item")} title="Bullet List">
+          <List className="h-4 w-4" />
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={() => insertMarkdown("- [ ] ", "", "task item")} title="Task List">
           <CheckSquare className="h-4 w-4" />
