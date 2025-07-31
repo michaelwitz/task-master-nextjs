@@ -15,15 +15,17 @@ Task Blaster is purpose-built to support modern AI-assisted software development
 ## 🚀 Features
 
 - **Kanban Board**: Drag-and-drop task management across multiple columns (Todo, In Progress, In Review, Done)
-- **Project Management**: Create and manage multiple projects with team leaders
+- **Human-Readable Task IDs**: Auto-generated task identifiers (e.g., PROJ-1, PROJ-2) for easy reference
+- **Task Lifecycle Tracking**: Automatic timestamps for task creation, start, and completion dates
+- **Project Management**: Create and manage multiple projects with team leaders and unique codes
 - **User Management**: Assign tasks to team members with type-ahead search
 - **Image Attachments**: Upload, view, and delete images attached to tasks with thumbnail previews
 - **Markdown Support**: Rich text descriptions for tasks with formatting toolbar
 - **Real-time Updates**: Optimistic UI updates with persistent database storage
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Responsive Design**: Full-width kanban columns that adapt to any screen size
 - **Dark/Light Theme**: Toggle between themes for better user experience
 - **Keyboard Navigation**: Full keyboard accessibility support
-- **Efficient Drag & Drop**: Sparse numbering algorithm for optimal performance
+- **Efficient Drag & Drop**: Sparse numbering algorithm for optimal performance with blocked task support
 
 ## 🛠️ Tech Stack
 
@@ -46,7 +48,7 @@ Task Blaster is purpose-built to support modern AI-assisted software development
 
 ```bash
 git clone <repository-url>
-cd task-master-nextjs
+cd task-blaster
 ```
 
 ### 2. Start the Application
@@ -199,9 +201,10 @@ All tasks include:
 ### Tables
 
 - **USERS**: Team members with first name, last name, and email
-- **PROJECTS**: Projects with title, unique code (max 10 chars), markdown description, and leader assignment
-- **TASKS**: Tasks with title, description, status, priority, assignee, and position
+- **PROJECTS**: Projects with title, unique code (max 10 chars), markdown description, leader assignment, and task sequence tracking
+- **TASKS**: Tasks with human-readable task_id, title, description, status, priority, assignee, position, and lifecycle timestamps
 - **TAGS**: Task tags for categorization
+- **TASK_TAGS**: Many-to-many relationship between tasks and tags
 - **IMAGE_METADATA**: Image information including filename, content type, and task association
 - **IMAGE_DATA**: Binary image data stored as base64 with optional thumbnails
 
