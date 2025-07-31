@@ -71,11 +71,14 @@ docker-compose exec nextjs npm run db:migrate
 ### 4. Seed Test Data
 
 ```bash
-# Seed all test data (users, projects, and tasks)
+# Option 1: Complete reset and seed all data (recommended for fresh start)
+docker-compose exec nextjs npx tsx scripts/reset-and-seed.ts
+
+# Option 2: Seed all data without clearing existing data
 docker-compose exec nextjs npx tsx scripts/seed-all.ts
 ```
 
-Or seed individually:
+Or seed data components individually:
 
 ```bash
 # Seed users only
@@ -86,6 +89,12 @@ docker-compose exec nextjs npx tsx scripts/seed-projects.ts
 
 # Seed tasks only (requires users and projects first)
 docker-compose exec nextjs npx tsx scripts/seed-tasks.ts
+
+# Seed test image data (requires tasks first)
+docker-compose exec nextjs npx tsx scripts/seed-test-image.ts
+
+# Seed real image from ~/Downloads/test-image.png (requires tasks first)
+docker-compose exec nextjs npx tsx scripts/seed-real-image.ts
 ```
 
 ### 5. Access the Application
@@ -187,7 +196,10 @@ All tasks include:
    # Run migrations
    npm run db:migrate
 
-   # Seed test data
+   # Seed test data (option 1: complete reset)
+   npx tsx scripts/reset-and-seed.ts
+   
+   # Or seed without clearing existing data (option 2)
    npx tsx scripts/seed-all.ts
    ```
 
@@ -266,6 +278,70 @@ npm run db:push      # Push schema changes
 # Utilities
 npm run lint         # Run ESLint
 ```
+
+## 🌱 Seed Scripts
+
+The project includes several specialized seed scripts for different use cases:
+
+### Complete Database Reset
+
+```bash
+# Clears ALL existing data and seeds fresh test data
+npx tsx scripts/reset-and-seed.ts
+```
+
+**Use when:** Starting fresh or cleaning up corrupted data. This is the **recommended** approach for initial setup.
+
+### Comprehensive Seeding (Preserves Existing Data)
+
+```bash
+# Seeds all data types without clearing existing records
+npx tsx scripts/seed-all.ts
+```
+
+**Use when:** Adding test data to an existing database without losing current records.
+
+### Individual Component Seeding
+
+```bash
+# Users (must be run first)
+npx tsx scripts/seed-users.ts
+
+# Projects (requires users)
+npx tsx scripts/seed-projects.ts
+
+# Tasks (requires users and projects)
+npx tsx scripts/seed-tasks.ts
+```
+
+**Use when:** You need to seed specific data types or troubleshoot seeding issues.
+
+### Image Data Seeding
+
+```bash
+# Adds small test images (1x1 pixel PNG files)
+npx tsx scripts/seed-test-image.ts
+
+# Adds real image from ~/Downloads/test-image.png
+npx tsx scripts/seed-real-image.ts
+```
+
+**Prerequisites for image seeding:**
+- Tasks must exist in the database
+- For `seed-real-image.ts`: Place a PNG file named `test-image.png` in your `~/Downloads` folder
+
+**Use when:** Testing image upload functionality or adding sample images to tasks.
+
+### Seeding Dependencies
+
+The scripts have the following dependency chain:
+
+1. **Users** → Must exist before projects
+2. **Projects** → Must exist before tasks  
+3. **Tasks** → Must exist before images
+4. **Tags** → Created automatically when seeding tasks
+
+**Note:** `reset-and-seed.ts` and `seed-all.ts` handle all dependencies automatically.
 
 ## 🐳 Docker Commands
 
