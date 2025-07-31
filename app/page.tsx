@@ -120,9 +120,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Taskmaster</h1>
+            <h1 className="text-4xl font-bold mb-4">Task Blaster</h1>
             <p className="text-muted-foreground text-lg">
-              Manage your projects with Kanban boards
+              Manage your agentic software development using Kanban boards
             </p>
           </div>
 

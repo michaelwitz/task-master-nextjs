@@ -1,6 +1,16 @@
-# Task Master
+# Task Blaster
 
-A modern, full-stack task management application built with Next.js 15, TypeScript, PostgreSQL, and Drizzle ORM. Features a Kanban board interface with drag-and-drop functionality, markdown descriptions, user management, and real-time updates.
+A modern, full-stack project management application specifically designed for **agentic software development** workflows. Built with Next.js 15, TypeScript, PostgreSQL, and Drizzle ORM, Task Blaster facilitates seamless collaboration between human developers and AI agents using intuitive Kanban-style project management.
+
+## 🤖 Agentic Development Focus
+
+Task Blaster is purpose-built to support modern AI-assisted software development where autonomous agents work alongside human developers. The platform provides structured project management that enables:
+
+- **Agent-Human Collaboration**: Seamless task handoffs between AI agents and human developers
+- **Structured Workflows**: Kanban boards that accommodate both automated and manual development processes
+- **Rich Documentation**: Markdown support for detailed specifications that agents can understand and act upon
+- **Project Codes**: Unique identifiers that help agents reference and organize work across projects
+- **Visual Progress Tracking**: Clear status indicators that both humans and agents can interpret
 
 ## 🚀 Features
 
@@ -189,7 +199,7 @@ All tasks include:
 ### Tables
 
 - **USERS**: Team members with first name, last name, and email
-- **PROJECTS**: Projects with title and leader assignment
+- **PROJECTS**: Projects with title, unique code (max 10 chars), markdown description, and leader assignment
 - **TASKS**: Tasks with title, description, status, priority, assignee, and position
 - **TAGS**: Task tags for categorization
 - **IMAGE_METADATA**: Image information including filename, content type, and task association
@@ -208,8 +218,12 @@ All tasks include:
 
 1. Navigate to the home page
 2. Click "Create New Project"
-3. Enter project title and select a team leader
-4. Click "Create Project"
+3. Enter project title and unique project code (ALL CAPS, max 10 characters)
+4. Add an optional markdown description for detailed project specifications
+5. Select a team leader
+6. Click "Create Project"
+
+**Note**: Project codes are immutable after creation and serve as unique identifiers for agent-based workflows.
 
 ### Managing Tasks
 
