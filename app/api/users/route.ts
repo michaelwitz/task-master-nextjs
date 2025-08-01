@@ -13,19 +13,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, lastName, email } = await request.json()
+    const { fullName, email } = await request.json()
     
-    if (!firstName || !lastName || !email) {
+    if (!fullName || !email) {
       return NextResponse.json(
-        { error: 'First name, last name, and email are required' },
+        { error: 'Full name and email are required' },
         { status: 400 }
       )
     }
 
-    const user = await dbService.createUser(firstName, lastName, email)
+    const user = await dbService.createUser(fullName, email)
     return NextResponse.json(user, { status: 201 })
   } catch (error) {
     console.error('Error creating user:', error)
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
   }
-} 
+}

@@ -7,41 +7,32 @@ import { mapDbToJs, mapJsToDb, mapDbArrayToJs } from '@/lib/utils/property-mappe
 export class DatabaseService {
   // User methods
   async getUsers() {
-    const users = await db.select().from(USERS).orderBy(asc(USERS.first_name), asc(USERS.last_name))
+    const users = await db.select().from(USERS).orderBy(asc(USERS.full_name))
     return mapDbArrayToJs(users)
   }
 
   async searchUsers(query: string) {
     const searchTerm = `%${query.toLowerCase()}%`
     const users = await db
-      .select({
-        id: USERS.id,
-        first_name: USERS.first_name,
-        last_name: USERS.last_name,
-        email: USERS.email,
-        full_name: sql<string>`${USERS.first_name} || ' ' || ${USERS.last_name}`,
-      })
+      .select()
       .from(USERS)
       .where(
         or(
-          ilike(USERS.first_name, searchTerm),
-          ilike(USERS.last_name, searchTerm),
-          ilike(USERS.email, searchTerm),
-          ilike(sql<string>`${USERS.first_name} || ' ' || ${USERS.last_name}`, searchTerm)
+          ilike(USERS.full_name, searchTerm),
+          ilike(USERS.email, searchTerm)
         )
       )
-      .orderBy(asc(USERS.first_name), asc(USERS.last_name))
+      .orderBy(asc(USERS.full_name))
       .limit(10)
     
     return mapDbArrayToJs(users)
   }
 
-  async createUser(firstName: string, lastName: string, email: string) {
+  async createUser(fullName: string, email: string) {
     const [user] = await db
       .insert(USERS)
       .values({
-        first_name: firstName,
-        last_name: lastName,
+        full_name: fullName.trim(),
         email: email.toLowerCase(),
       })
       .returning()
@@ -87,8 +78,7 @@ export class DatabaseService {
         updated_at: PROJECTS.updated_at,
         leader: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -100,7 +90,7 @@ export class DatabaseService {
       const mappedProject = mapDbToJs(project)
       return {
         ...mappedProject,
-        leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+        leader: project.leader ? project.leader.full_name : undefined,
       }
     })
   }
@@ -130,8 +120,7 @@ export class DatabaseService {
         updated_at: PROJECTS.updated_at,
         leader: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -146,7 +135,7 @@ export class DatabaseService {
     const mappedProject = mapDbToJs(project)
     return {
       ...mappedProject,
-      leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+      leader: project.leader ? project.leader.full_name : undefined,
     }
   }
 
@@ -174,8 +163,7 @@ export class DatabaseService {
         updated_at: PROJECTS.updated_at,
         leader: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -190,7 +178,7 @@ export class DatabaseService {
     const mappedProject = mapDbToJs(project)
     return {
       ...mappedProject,
-      leader: project.leader ? `${project.leader.first_name} ${project.leader.last_name}` : undefined,
+      leader: project.leader ? project.leader.full_name : undefined,
     }
   }
 
@@ -220,8 +208,7 @@ export class DatabaseService {
         updated_at: TASKS.updated_at,
         assignee: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -243,7 +230,7 @@ export class DatabaseService {
         return {
           ...mappedTask,
           tags: taskTags.map(tt => tt.tag),
-          assignee: task.assignee ? `${task.assignee.first_name} ${task.assignee.last_name}` : undefined,
+          assignee: task.assignee ? task.assignee.full_name : undefined,
         }
       })
     )
@@ -442,8 +429,7 @@ export class DatabaseService {
         updated_at: TASKS.updated_at,
         assignee: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -466,7 +452,7 @@ export class DatabaseService {
     return {
       ...mappedTask,
       tags: taskTags.map(tt => tt.tag),
-      assignee: updatedTaskWithDetails.assignee ? `${updatedTaskWithDetails.assignee.first_name} ${updatedTaskWithDetails.assignee.last_name}` : undefined,
+      assignee: updatedTaskWithDetails.assignee ? updatedTaskWithDetails.assignee.full_name : undefined,
     }
   }
 
@@ -496,8 +482,7 @@ export class DatabaseService {
         updated_at: TASKS.updated_at,
         assignee: {
           id: USERS.id,
-          first_name: USERS.first_name,
-          last_name: USERS.last_name,
+          full_name: USERS.full_name,
           email: USERS.email,
         },
       })
@@ -519,7 +504,7 @@ export class DatabaseService {
         return {
           ...mappedTask,
           tags: taskTags.map(tt => tt.tag),
-          assignee: task.assignee ? `${task.assignee.first_name} ${task.assignee.last_name}` : undefined,
+          assignee: task.assignee ? task.assignee.full_name : undefined,
         }
       })
     )
@@ -528,11 +513,10 @@ export class DatabaseService {
   }
 
   private async getUserIdByName(fullName: string) {
-    const [firstName, lastName] = fullName.split(' ')
     const [user] = await db
       .select()
       .from(USERS)
-      .where(and(eq(USERS.first_name, firstName), eq(USERS.last_name, lastName)))
+      .where(eq(USERS.full_name, fullName))
     return user || null
   }
 
@@ -590,7 +574,12 @@ export class DatabaseService {
       }
 
       // Build update object
-      const updateData: any = {
+      const updateData: {
+        status: string
+        position: number
+        updated_at: Date
+        started_at?: Date
+      } = {
         status: newStatus, 
         position: newPosition,
         updated_at: new Date()

@@ -21,16 +21,23 @@ async function resetAndSeed() {
     // Step 1: Seed Users
     console.log('📝 Step 1: Seeding users...')
     const users = [
-      { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com' },
-      { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com' },
-      { firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@example.com' },
-      { firstName: 'Alice', lastName: 'Williams', email: 'alice.williams@example.com' },
-      { firstName: 'Charlie', lastName: 'Brown', email: 'charlie.brown@example.com' },
+      { fullName: 'John Doe', email: 'john.doe@example.com' },
+      { fullName: 'Jane Smith', email: 'jane.smith@example.com' },
+      { fullName: 'Bob Johnson', email: 'bob.johnson@example.com' },
+      { fullName: 'Alice Williams', email: 'alice.williams@example.com' },
+      { fullName: 'Charlie Brown', email: 'charlie.brown@example.com' },
+      { fullName: 'David Chen', email: 'david.chen@example.com' },
+      { fullName: 'Emily Rodriguez', email: 'emily.rodriguez@example.com' },
+      { fullName: 'Frank Miller', email: 'frank.miller@example.com' },
+      { fullName: 'Grace Thompson', email: 'grace.thompson@example.com' },
+      { fullName: 'Henry Kumar', email: 'henry.kumar@example.com' },
+      { fullName: 'Isabella Garcia', email: 'isabella.garcia@example.com' },
+      { fullName: 'James Wilson', email: 'james.wilson@example.com' },
     ]
 
     for (const user of users) {
-      const createdUser = await dbService.createUser(user.firstName, user.lastName, user.email)
-      console.log(`  ✅ Created user: ${createdUser.firstName} ${createdUser.lastName} (${createdUser.email})`)
+const createdUser = await dbService.createUser(user.fullName, user.email)
+      console.log(`  ✅ Created user: ${createdUser.fullName} (${createdUser.email})`)
     }
 
     // Step 2: Seed Projects with codes and descriptions

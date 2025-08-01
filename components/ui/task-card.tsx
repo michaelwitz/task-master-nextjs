@@ -53,7 +53,7 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
       style={style}
                     className={`mb-3 cursor-grab active:cursor-grabbing relative py-0 ${
                 isDragging ? "shadow-lg" : ""
-              } ${task.isBlocked ? "ring-2 ring-yellow-400" : ""}`}
+              } ${task.isBlocked ? "ring-2 ring-red-400" : ""}`}
       {...attributes}
       {...listeners}
     >
@@ -101,7 +101,7 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
                       </span>
                     )}
                     {task.isBlocked && (
-                      <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full font-medium">
+                      <span className="text-xs bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-2 py-1 rounded-full font-medium">
                         BLOCKED
                       </span>
                     )}
@@ -116,7 +116,7 @@ export function TaskCard({ task, projectId, onUpdate, onDelete }: TaskCardProps)
 
                             {/* Blocked Reason */}
                   {task.isBlocked && task.blockedReason && (
-                    <div className="text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 p-2 rounded">
+                    <div className="text-xs text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950 p-2 rounded">
                       <span className="font-medium">Blocked:</span> {task.blockedReason}
                     </div>
                   )}

@@ -5,16 +5,16 @@ async function seedUsers() {
     console.log('Seeding users...')
     
     const users = [
-      { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com' },
-      { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com' },
-      { firstName: 'Bob', lastName: 'Johnson', email: 'bob.johnson@example.com' },
-      { firstName: 'Alice', lastName: 'Williams', email: 'alice.williams@example.com' },
-      { firstName: 'Charlie', lastName: 'Brown', email: 'charlie.brown@example.com' },
+      { fullName: 'John Doe', email: 'john.doe@example.com' },
+      { fullName: 'Jane Smith', email: 'jane.smith@example.com' },
+      { fullName: 'Bob Johnson', email: 'bob.johnson@example.com' },
+      { fullName: 'Alice Williams', email: 'alice.williams@example.com' },
+      { fullName: 'Charlie Brown', email: 'charlie.brown@example.com' },
     ]
 
     for (const user of users) {
-      const createdUser = await dbService.createUser(user.firstName, user.lastName, user.email)
-      console.log(`Created user: ${createdUser.firstName} ${createdUser.lastName} (${createdUser.email})`)
+      const createdUser = await dbService.createUser(user.fullName, user.email)
+      console.log(`Created user: ${createdUser.fullName} (${createdUser.email})`)
     }
 
     console.log('User seeding completed!')

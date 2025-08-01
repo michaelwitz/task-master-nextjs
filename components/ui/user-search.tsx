@@ -80,8 +80,8 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
   const filteredUsers = searchQuery.trim() === "" 
     ? users 
     : users.filter(user => 
-        user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+        user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
 
   // Reset item refs when filtered users change
@@ -178,7 +178,7 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
             onKeyDown={handleTriggerKeyDown}
             onFocus={handleTriggerFocus}
           >
-            {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : placeholder}
+            {selectedUser ? selectedUser.fullName : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -252,7 +252,7 @@ export function UserSearch({ value, onValueChange, placeholder = "Search users..
                       <div className="mr-2 h-4 w-4" />
                     )}
                     <div className="flex flex-col">
-                      <span>{user.firstName} {user.lastName}</span>
+                      <span>{user.fullName}</span>
                       <span className="text-sm text-muted-foreground">{user.email}</span>
                     </div>
                   </div>

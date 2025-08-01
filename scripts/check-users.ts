@@ -11,7 +11,7 @@ async function checkUsers() {
     } else {
       console.log(`Found ${users.length} users:`)
       users.forEach(user => {
-        console.log(`- ${user.firstName} ${user.lastName} (${user.email}) - ID: ${user.id}`)
+        console.log(`- ${user.fullName} (${user.email}) - ID: ${user.id}`)
       })
     }
   } catch (error) {

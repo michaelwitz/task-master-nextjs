@@ -4,8 +4,7 @@ import { relations } from 'drizzle-orm'
 // Users table - using integer sequence as primary key (best practice for scalability)
 export const USERS = pgTable('USERS', {
   id: serial('id').primaryKey(),
-  first_name: varchar('first_name', { length: 100 }).notNull(),
-  last_name: varchar('last_name', { length: 100 }).notNull(),
+  full_name: varchar('full_name', { length: 200 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -81,8 +80,7 @@ export const IMAGE_DATA = pgTable('IMAGE_DATA', {
 // export const projectsLeaderIdIdx = index('projects_leader_id_idx').on(PROJECTS.leader_id)
 
 // User search indexes for type-ahead functionality
-// export const usersFirstNameIdx = index('users_first_name_idx').on(USERS.first_name)
-// export const usersLastNameIdx = index('users_last_name_idx').on(USERS.last_name)
+// export const usersFullNameIdx = index('users_full_name_idx').on(USERS.full_name)
 // export const usersEmailIdx = index('users_email_idx').on(USERS.email)
 
 // Relations

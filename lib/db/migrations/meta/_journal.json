@@ -50,6 +50,13 @@
       "when": 1753984009057,
       "tag": "0006_ancient_human_torch",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1754072615921,
+      "tag": "0007_amusing_power_pack",
+      "breakpoints": true
     }
   ]
 }

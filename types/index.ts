@@ -3,8 +3,7 @@ export type Priority = 'Low' | 'Medium' | 'High' | 'Critical'
 
 export interface User {
   id: number
-  firstName: string
-  lastName: string
+  fullName: string
   email: string
   createdAt: Date
   updatedAt: Date

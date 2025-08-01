@@ -12,7 +12,7 @@ async function testSearch() {
       const results = await dbService.searchUsers(query)
       console.log(`Found ${results.length} results:`)
       results.forEach(user => {
-        console.log(`- ${user.firstName} ${user.lastName} (${user.email})`)
+        console.log(`- ${user.fullName} (${user.email})`)
       })
     }
     
@@ -20,7 +20,7 @@ async function testSearch() {
     console.log('\n\nAll users in database:')
     const allUsers = await dbService.getUsers()
     allUsers.forEach(user => {
-      console.log(`- ${user.firstName} ${user.lastName} (${user.email})`)
+      console.log(`- ${user.fullName} (${user.email})`)
     })
     
   } catch (error) {
